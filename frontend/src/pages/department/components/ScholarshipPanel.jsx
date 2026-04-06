@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 export default function ScholarshipDashboard() {
+  const [isOpen, setIsOpen] = useState(false);
    const token = localStorage.getItem("token"); 
   const [applications, setApplications] = useState([]);
   const [selectedApp, setSelectedApp] = useState(null);
@@ -118,7 +119,7 @@ export default function ScholarshipDashboard() {
         },
       },
     );
-
+alert("Application approved successfully!");
     resetModal();
 
     fetchDashboardData();
@@ -143,7 +144,7 @@ export default function ScholarshipDashboard() {
         },
       },
     );
-
+alert(" Application rejected!");
     resetModal();
 
     fetchDashboardData();
@@ -192,9 +193,15 @@ export default function ScholarshipDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 flex font-sans">
       {/* ════════════════════ SIDEBAR ════════════════════ */}
-      <div className="w-64  bg-gradient-to-b from-blue-800 to-blue-900 text-white flex flex-col shadow-xl">
-        {/* Logo */}
-        <div className="p-6 border-b border-emerald-700">
+       <div className={`fixed top-0 left-0 h-full w-64 bg-gradient-to-b from-blue-800 to-blue-900 text-white flex flex-col shadow-2xl transform transition-transform duration-300 z-50
+${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>  {/* Logo */}
+        <div className="p-6 border-b border-emerald-700 relative">
+          <button 
+  className="md:hidden absolute top-4 right-4 text-white text-xl"
+  onClick={() => setIsOpen(false)}
+>
+  ✕
+</button>
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10  bg-blue-600 rounded-lg flex items-center justify-center shadow-inner">
               <GraduationCap className="w-6 h-6 text-white" />
@@ -278,7 +285,7 @@ export default function ScholarshipDashboard() {
       </div>
 
       {/* ════════════════════ MAIN CONTENT ════════════════════ */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden ml-0 md:ml-64">
         {/* Top Header */}
         <div className="bg-white border-b px-6 py-4 shadow-sm flex-shrink-0">
           <div className="flex justify-between items-center">
@@ -295,19 +302,15 @@ export default function ScholarshipDashboard() {
                 {activeTab === "dashboard" &&
                   "Monitor scholarship clearance applications"}
               </p>
+           
             </div>
-            <div className="text-right">
-              <p className="text-xs text-gray-400">Last updated</p>
-              <p className="text-sm font-semibold text-gray-800">
-                {new Date()
-                  .toLocaleTimeString("en-IN", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: true,
-                  })
-                  .toLowerCase()}
-              </p>
-            </div>
+            <button 
+  className="md:hidden text-2xl"
+  onClick={() => setIsOpen(true)}
+>
+  ☰
+</button>
+             
           </div>
         </div>
 
@@ -608,6 +611,7 @@ export default function ScholarshipDashboard() {
                           "Roll No",
                           "Name",
                           "Branch",
+                          "Semester",
                           "Status",
                           "Processed On",
                           "Remarks",
@@ -639,9 +643,14 @@ export default function ScholarshipDashboard() {
                             </span>
                           </td>
                           <td className="px-6 py-4">
+  <div className="text-sm text-gray-700">
+    {app.semester || "N/A"}
+  </div>
+</td>
+                          <td className="px-6 py-4">
                             {getStatusBadge(
                               app.departments?.find(
-                                (d) => d.name === "scholarship",
+                               (d) => d.name?.toLowerCase() === "scholarship",
                               )?.status,
                             )}
                           </td>
@@ -651,7 +660,8 @@ export default function ScholarshipDashboard() {
                             )}
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-700 max-w-xs truncate">
-                            {app.remark || "No remarks"}
+                            {/* {app.remark || "No remarks"} */}
+                            {app.departments?.find(d => d.name === "scholarship")?.remark || "No remarks"}
                           </td>
                         </tr>
                       ))}

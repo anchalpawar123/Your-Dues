@@ -79,12 +79,35 @@ isScholarshipHolder: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
+hodName: {
+  type: String,
+},
 
-    finalStatus: {
-      type: String,
-      enum: ["pending", "approved"],
-      default: "pending",
-    },
+hodBranch: {
+  type: String,
+},
+//     finalStatus: {
+//   type: String,
+//   enum: ["pending", "accounts_pending", "hod_pending", "approved"],
+//   default: "pending",
+// },
+finalStatus: {
+  type: String,
+  enum: [
+    "pending",
+    "accounts_pending",
+    "hod_pending",
+    "approved",
+    "hod_rejected" // ✅ YE ADD KARNA HAI
+  ],
+  default: "pending",
+},
+
+accountStatus: {
+  type: String,
+  enum: ["pending", "approved", "rejected"],
+  default: "pending",
+},
   },
   { timestamps: true },
 );

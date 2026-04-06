@@ -3,6 +3,7 @@ import { LayoutDashboard, Clock, History, CheckCircle,FileText, LogOut } from "l
 import axios from "axios";
 
 export default function SportsDashboard() {
+  const [isOpen, setIsOpen] = useState(false);
   const [applications, setApplications] = useState([]);
   const [selectedApp, setSelectedApp] = useState(null);
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -158,9 +159,15 @@ export default function SportsDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* ============ LEFT SIDEBAR ============ */}
-      <div className="w-64 bg-gradient-to-b from-blue-800 to-blue-900 text-white flex flex-col">
-        {/* Logo/Header Section */}
-        <div className="p-6 border-b border-blue-700">
+<div className={`fixed top-0 left-0 h-full w-64 bg-gradient-to-b from-blue-800 to-blue-900 text-white flex flex-col shadow-2xl transform transition-transform duration-300 z-50
+${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>        {/* Logo/Header Section */}
+        <div className="p-6 border-b border-blue-700 relative">
+          <button 
+  className="md:hidden absolute top-4 right-4 text-white text-xl"
+  onClick={() => setIsOpen(false)}
+>
+  ✕
+</button>
           <div className="flex items-center space-x-3">
             <div>
               <h1 className="text-xl font-bold">Sports Department</h1>
@@ -244,7 +251,7 @@ export default function SportsDashboard() {
       </div>
 
       {/* ============ MAIN CONTENT AREA ============ */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col ml-0 md:ml-64">
         {/* Top Header Bar */}
         <div className="bg-white border-b px-6 py-4 shadow-sm">
           <div className="flex justify-between items-center">
@@ -259,18 +266,13 @@ export default function SportsDashboard() {
                 {activeTab === "history" && "View all processed applications"}
               </p>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <p className="text-xs text-gray-500">Last updated</p>
-                <p className="text-sm font-medium text-gray-800">
-                  {new Date().toLocaleTimeString('en-IN', { 
-                    hour: '2-digit', 
-                    minute: '2-digit',
-                    hour12: true 
-                  }).toLowerCase()}
-                </p>
-              </div>
-            </div>
+            <button 
+  className="md:hidden text-2xl"
+  onClick={() => setIsOpen(true)}
+>
+  ☰
+</button>
+             
           </div>
         </div>
 
@@ -508,6 +510,7 @@ export default function SportsDashboard() {
                         <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Roll No</th>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Name</th>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Branch</th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Semester</th>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Status</th>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Processed Date</th>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Remark</th>
@@ -527,6 +530,12 @@ export default function SportsDashboard() {
                               {app.branch}
                             </span>
                           </td>
+                          
+<td className="px-6 py-4">
+  <div className="text-sm text-gray-900">
+    {app.semester || "N/A"}
+  </div>
+</td>
                           <td className="px-6 py-4">
                             {getStatusBadge(
                               app.departments.find((d) => d.name === "sports")?.status

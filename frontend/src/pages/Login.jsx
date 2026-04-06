@@ -25,7 +25,7 @@ export default function Login() {
           : { role, email, password };
 
       const res = await axios.post(
-        "https://no-dues-h9ju.onrender.com/api/auth/login",
+        "http://localhost:5000/api/auth/login",
         payload
       );
       
@@ -84,10 +84,10 @@ if (path) {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-100 via-blue-100 to-sky-200">
-      <div className="bg-white w-96 rounded-xl shadow-xl overflow-hidden">
+      <div className="bg-white w-full max-w-md mx-4 sm:mx-0 rounded-xl shadow-xl overflow-hidden">
 
         {/* TOP IMAGE */}
-        <div className="h-40 w-full">
+         <div className="h-32 sm:h-40 w-full">
           <img
             src="https://image-static.collegedunia.com/public/reviewPhotos/292068/1494843473phpy8cUGH.jpeg"
             alt="College"
@@ -96,17 +96,18 @@ if (path) {
         </div>
 
         {/* LOGIN FORM */}
-        <form onSubmit={handleLogin} className="p-6">
-          <h2 className="text-2xl font-bold text-center text-sky-600 mb-6">
+        <form onSubmit={handleLogin} className="p-4 sm:p-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-center text-sky-600 mb-5">
             No Dues Login
           </h2>
+          
 
           {/* ROLE SELECT */}
           <label className="text-sm font-medium text-gray-700">
             Select Role
           </label>
           <select
-            className="w-full mb-4 p-2 border rounded"
+           className="w-full mb-4 p-2.5 text-sm sm:text-base border rounded focus:outline-none focus:ring-2 focus:ring-sky-400"
             value={role}
             onChange={(e) => {
               setRole(e.target.value);
@@ -207,6 +208,13 @@ if (path) {
           <button className="w-full bg-sky-500 text-white py-2 rounded hover:bg-sky-600 transition">
             Login
           </button>
+          <button
+  type="button"
+  onClick={() => navigate("/")}
+  className="w-full mt-3 bg-black text-white py-3 rounded text-lg font-semibold hover:bg-gray-800 transition"
+>
+  ← Back to Home
+</button>
         </form>
       </div>
     </div>

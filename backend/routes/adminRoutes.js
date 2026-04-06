@@ -55,7 +55,8 @@ router.get(
   roleMiddleware(["admin"]),
   async (req, res) => {
     try {
-      const { name, rollNumber, branch, email } = req.body;
+      // const { name, rollNumber, branch, email } = req.body;
+      const { name, rollNumber, branch, semester, email } = req.body;
 
       if (!name || !rollNumber || !branch) {
         return res.status(400).json({ message: "Required fields missing" });
@@ -67,11 +68,13 @@ router.get(
       }
 
       const hashedPassword = await bcrypt.hash(rollNumber, 10);
-
+// 🧹 old data cleanup (IMPORTANT)
+await NoDuesApplication.deleteMany({ rollNumber });
       await User.create({
         name,
         rollNumber,
         branch,
+        semester,
         email,
         password: hashedPassword,
         role: "student",
@@ -154,12 +157,12 @@ router.post(
       const hashedPassword = await bcrypt.hash(password, 10);
  
       await User.create({
-        name,
-        email,
-        password: hashedPassword,
-        role: "hod",
-         branch, // ✅ ADD THIS
-      });
+  name,
+  email,
+  password: hashedPassword,
+  role: "hod",
+  branch: branch.toUpperCase().trim(), // 🔥 YE CHANGE
+});
 
       res.json({ message: "HOD added successfully" });
     } catch (err) {
@@ -175,7 +178,16 @@ router.delete(
   roleMiddleware(["admin"]),
   async (req, res) => {
     try {
-      await User.findByIdAndDelete(req.params.id);
+      // await User.findByIdAndDelete(req.params.id);
+      const user = await User.findById(req.params.id);
+
+// ✅ user delete
+await User.findByIdAndDelete(req.params.id);
+
+// ✅ uska old no-dues data bhi delete
+if (user?.rollNumber) {
+  await NoDuesApplication.deleteMany({ rollNumber: user.rollNumber });
+}
       res.json({ message: "User deleted successfully" });
     } catch (err) {
       res.status(500).json({ message: "Server error" });
@@ -212,14 +224,15 @@ router.delete(
 
           const hashedPassword = await bcrypt.hash(student.rollNumber, 10);
 
-          await User.create({
-            name: student.name,
-            rollNumber: student.rollNumber,
-            branch: student.branch,
-            email: student.email,
-            password: hashedPassword,
-            role: "student"
-          });
+         await User.create({
+  name: student.name,
+  rollNumber: student.rollNumber,
+  branch: student.branch,
+  semester: student.semester, // 🔥 ADD THIS
+  email: student.email,
+  password: hashedPassword,
+  role: "student"
+});
 
           success++;
 
@@ -233,6 +246,96 @@ router.delete(
         success,
         failed
       });
+
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Server error" });
+    }
+  }
+);
+
+
+/* ================= FINAL APPROVED REPORT ================= */
+// router.get(
+//   "/report-table",
+//   authMiddleware,
+//   roleMiddleware(["admin"]),
+//   async (req, res) => {
+//     try {
+//       const { branch } = req.query;
+
+//       let filter = {
+//         finalStatus: "approved" // ✅ ONLY completed
+//       };
+
+//       // branch filter
+//       if (branch) {
+//         filter.branch = branch.toUpperCase().trim();
+//       }
+
+//       const apps = await NoDuesApplication.find(filter)
+//         .sort({ updatedAt: -1 });
+
+//       const result = apps.map(app => ({
+//   name: app.name,
+//   rollNumber: app.rollNumber,
+//   branch: app.branch,
+//   semester: app.semester, // 🔥 ADD THIS LINE
+//   status: app.finalStatus 
+// }));
+
+//       res.json(result);
+
+//     } catch (err) {
+//       console.error(err);
+//       res.status(500).json({ message: "Server error" });
+//     }
+//   }
+// );
+
+
+router.get(
+  "/report-table",
+  authMiddleware,
+  roleMiddleware(["admin"]),
+  async (req, res) => {
+    try {
+      const { branch, type } = req.query;
+
+      let filter = {
+        finalStatus: "approved",
+      };
+
+      if (branch) {
+        filter.branch = branch.toUpperCase().trim();
+      }
+
+      const apps = await NoDuesApplication.find(filter);
+
+      let filteredApps = apps;
+
+      // 🔥 MAIN LOGIC
+      if (type === "report1") {
+        // ✅ ONLY 8th SEM
+        filteredApps = apps.filter(
+          (app) => Number(app.semester) === 8
+        );
+      } else if (type === "report2") {
+        // ✅ EXCEPT 8th SEM
+        filteredApps = apps.filter(
+          (app) => Number(app.semester) !== 8
+        );
+      }
+
+      const result = filteredApps.map(app => ({
+        name: app.name,
+        rollNumber: app.rollNumber,
+        branch: app.branch,
+        semester: app.semester,
+        status: app.finalStatus
+      }));
+
+      res.json(result);
 
     } catch (err) {
       console.error(err);

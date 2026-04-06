@@ -16,18 +16,17 @@ const router = express.Router();
   roleMiddleware(["hod"]),
   async (req, res) => {
     try {
-       const apps = await NoDuesApplication.find({
-  finalStatus: "pending",
-  branch: { $regex: new RegExp(`^${req.user.branch}$`, "i") },
-}).sort({ createdAt: -1 });
+          
 
-      const readyForHOD = apps.filter(app =>
-        Array.isArray(app.departments) &&
-        app.departments.length > 0 &&
-        app.departments.every(d => d.status === "approved")
-      );
+  const apps = await NoDuesApplication.find({
+  finalStatus: "hod_pending",
+  branch: req.user.branch.toUpperCase().trim(),
+}).sort({ createdAt: -1 }); 
 
-      res.json(readyForHOD);
+return res.json(apps);
+
+ 
+       
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: "Server error" });
@@ -51,7 +50,7 @@ router.put(
   async (req, res) => {
     try {
       const app = await NoDuesApplication.findById(req.params.id);
- if (app.branch.toLowerCase() !== req.user.branch.toLowerCase())  {
+  if (app.branch.toUpperCase().trim() !== req.user.branch.toUpperCase().trim())  {
   return res.status(403).json({
     message: "You cannot approve other branch application",
   });
@@ -78,6 +77,9 @@ router.put(
       app.hodRemark = req.body.remark || "";
       app.hodApprovedAt = new Date();
       app.hodApprovedBy = req.user._id;
+      
+app.hodName = req.user.name;   // 👈 ye add kar
+ 
 
       await app.save();
 
@@ -176,7 +178,47 @@ College Administration`,
   }
 );
 
+/* ================= HOD REJECT ================= */
+router.put(
+  "/reject/:id",
+  auth,
+  roleMiddleware(["hod"]),
+  async (req, res) => {
+    try {
+      const app = await NoDuesApplication.findById(req.params.id);
 
+      if (!app) {
+        return res.status(404).json({ message: "Application not found" });
+      }
+
+      // branch check
+      if (app.branch.toUpperCase().trim() !== req.user.branch.toUpperCase().trim()) {
+        return res.status(403).json({
+          message: "You cannot reject other branch application",
+        });
+      }
+
+      // reject logic
+      // app.hodStatus = "rejected";
+      // app.finalStatus = "pending"; // ⚠️ important
+      // // app.finalStatus = "hod_rejected";
+      // app.hodRemark = req.body.remark || "";
+      app.hodStatus = "rejected";
+app.hodRemark = req.body.remark || "Rejected by HOD";
+app.finalStatus = "hod_rejected"; 
+      app.hodApprovedAt = new Date();
+      app.hodApprovedBy = req.user._id;
+
+      await app.save();
+
+      return res.json({ message: "Application rejected by HOD" });
+
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Server error" });
+    }
+  }
+);
 /* ================= HISTORY ================= */
 router.get(
   "/history",

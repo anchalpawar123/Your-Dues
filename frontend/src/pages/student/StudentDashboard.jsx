@@ -8,6 +8,7 @@ const token = localStorage.getItem("token");
 export default function StudentDashboard() {
   const [notifications, setNotifications] = useState([]);
   const [activePage, setActivePage] = useState("dashboard");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
    const [profilePic, setProfilePic] = useState("");
   const navigate = useNavigate();
   const handleLogout = () => {
@@ -22,14 +23,26 @@ export default function StudentDashboard() {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
     })
-    .then((res) => {
-      setProfilePic(res.data.profilePic);
-    });
+     .then((res) => {
+  setProfilePic(res.data.profilePic);
+
+  // ✅ ADD THIS
+  localStorage.setItem("studentEmail", res.data.email);
+});
 }, []);
   return (
-    <div className="min-h-screen flex bg-gray-50">
+    <div className=" h-screen overflow-hidden flex flex-col md:flex-row bg-gray-50">
       {/* ================= SIDEBAR ================= */}
-      <aside className="w-64 bg-gradient-to-b from-blue-600 to-blue-700 text-white shadow-xl">
+       <aside 
+className={`fixed md:static top-0 left-0 h-screen w-64 flex flex-col justify-between bg-gradient-to-b from-blue-600 to-blue-700 text-white shadow-xl transform transition-transform duration-300 z-[60]
+${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
+>
+<button
+    onClick={() => setSidebarOpen(false)}
+    className="md:hidden absolute top-4 right-4 text-white text-xl"
+  >
+    ✕
+  </button>
         <div className="p-6 border-b border-blue-500">
           <h2 className="text-xl font-bold">Student Portal</h2>
           <p className="text-blue-200 text-sm mt-1">No Dues System</p>
@@ -119,7 +132,9 @@ export default function StudentDashboard() {
           </p>
         </div>
 
-        <nav className="p-4">
+        {/* <nav className="p-4"> */}
+         <div className="flex-1">
+  <nav className="p-4">
           <ul className="space-y-1">
             <SidebarItem
               label="Dashboard"
@@ -162,10 +177,31 @@ export default function StudentDashboard() {
             </button>
           </div>
         </nav>
+        </div>
       </aside>
+      {sidebarOpen && (
+  <div
+    onClick={() => setSidebarOpen(false)}
+    className="fixed inset-0 bg-black bg-opacity-40 z-50 md:hidden"
+  />
+)}
 
       {/* ================= MAIN CONTENT ================= */}
-      <main className="flex-1 p-8 overflow-y-auto">
+       <div className="md:hidden fixed top-0 left-0 right-0 bg-white shadow z-40 flex items-center justify-between px-4 py-3">
+
+    <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
+  Student Dashboard
+</h2>
+
+  <button
+    onClick={() => setSidebarOpen(true)}
+    className="text-2xl text-gray-700"
+  >
+    ☰
+  </button>
+
+</div>
+       <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto mt-14 md:mt-0">
         {activePage === "dashboard" && <DashboardHome />}
         {activePage === "apply" && <ApplyNoDues />}
         {activePage === "view" && <ViewStatus />}
@@ -219,6 +255,28 @@ function DashboardHome() {
         res.data.departments.forEach((d) => {
           statusObj[d.name] = d.status;
         });
+        // ✅ ADD THIS BELOW
+
+// Accounts status
+// statusObj.accounts =
+//   res.data.finalStatus === "accounts_pending" ||
+//   res.data.finalStatus === "hod_pending" ||
+//   res.data.finalStatus === "approved"
+//     ? "approved"
+//     : "pending";
+const accDept = res.data.departments.find(
+  (d) => d.name === "accounts"
+);
+
+statusObj.accounts = accDept?.status || "pending";
+
+// HOD status
+statusObj.hod =
+  res.data.hodStatus === "approved"
+    ? "approved"
+    : res.data.hodStatus === "rejected"
+    ? "rejected"
+    : "pending";
         setStatusData(statusObj);
       })
       .catch(() => {
@@ -254,27 +312,38 @@ function DashboardHome() {
 
       <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {Object.entries(statusData).map(([dept, status]) => (
-          <StatusCard
-            key={dept}
-            title={dept.toUpperCase()}
-            status={
-              status === "approved"
-                ? "Cleared"
-                : status === "rejected"
-                  ? "Rejected"
-                  : "Pending"
-            }
-            color={
-              status === "approved"
-                ? "green"
-                : status === "rejected"
-                  ? "red"
-                  : "yellow"
-            }
-          />
-        ))}
+       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        {ALL_DEPARTMENTS.map((dept) => {
+  // const status = statusData[dept]?.status || "pending";
+
+  const raw = statusData[dept];
+
+const status =
+  typeof raw === "string"
+    ? raw
+    : raw?.status || "pending";
+
+  return (
+    <StatusCard
+      key={dept}
+      title={dept.toUpperCase()}
+      status={
+        status === "approved"
+          ? "Cleared"
+          : status === "rejected"
+          ? "Rejected"
+          : "Pending"
+      }
+      color={
+        status === "approved"
+          ? "green"
+          : status === "rejected"
+          ? "red"
+          : "yellow"
+      }
+    />
+  );
+})}
       </div>
     </div>
   );
@@ -332,13 +401,14 @@ function ApplyNoDues() {
      isScholarshipHolder: "",
   });
 
-  useEffect(() => {
-    setFormData((prev) => ({
-      ...prev,
-      rollNumber: rollNumber || "",
-      name: localStorage.getItem("studentName") || "",
-    }));
-  }, [rollNumber]);
+   useEffect(() => {
+  setFormData((prev) => ({
+    ...prev,
+    rollNumber: rollNumber || "",
+    name: localStorage.getItem("studentName") || "",
+    email: localStorage.getItem("studentEmail") || "", // ✅ ADD THIS
+  }));
+}, [rollNumber]);
 
   useEffect(() => {
     if (!rollNumber) return;
@@ -364,6 +434,35 @@ function ApplyNoDues() {
   //   alert("Application submitted successfully!");
   // };
   const handleSubmit = async () => {
+    // ✅ VALIDATION
+if (
+  !formData.name ||
+  !formData.email ||
+  !formData.phone ||
+  !formData.branch ||
+  !formData.semester ||
+  !formData.reason ||
+  !formData.graduationType ||
+  formData.isHosteller === "" ||
+  formData.isSportsMember === "" ||
+  formData.isScholarshipHolder === ""
+) {
+  alert("⚠️ Please fill all fields");
+  return;
+}
+
+// ✅ EMAIL CHECK
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+if (!emailRegex.test(formData.email)) {
+  alert("⚠️ Invalid email");
+  return;
+}
+
+// ✅ PHONE CHECK
+if (formData.phone.length < 10) {
+  alert("⚠️ Invalid phone number");
+  return;
+}
     try {
       const payload = {
         // rollNumber: formData.rollNumber.trim(),
@@ -443,15 +542,22 @@ function ApplyNoDues() {
         </div>
       ) : (
         /* ===== FORM VIEW ===== */
-        <div className="bg-white rounded-lg shadow-md p-8">
-          <div className="space-y-8">
+        <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 md:p-8">
+           
+            <form
+  onSubmit={(e) => {
+    e.preventDefault();
+    handleSubmit();
+  }}
+  className="space-y-8"
+> 
             {/* ================= PERSONAL INFORMATION ================= */}
             <div>
               <h2 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">
                 Personal Information
               </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className=" grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <InputField
                   label="Full Name"
                   name="name"
@@ -517,15 +623,24 @@ function ApplyNoDues() {
   <option value="CSIT">Computer Science & Information Technology</option>
                 </SelectField>
 
-                <SelectField
-                  label="Current Semester"
-                  name="semester"
-                  value={formData.semester}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="8">8th Semester</option>
-                </SelectField>
+                 <SelectField
+  label="Current Semester"
+  name="semester"
+  value={formData.semester}
+  onChange={handleChange}
+  required
+>
+  <option value="">Select Semester</option>
+
+  <option value="1">1st Semester</option>
+  <option value="2">2nd Semester</option>
+  <option value="3">3rd Semester</option>
+  <option value="4">4th Semester</option>
+  <option value="5">5th Semester</option>
+  <option value="6">6th Semester</option>
+  <option value="7">7th Semester</option>
+  <option value="8">8th Semester</option>
+</SelectField>
               </div>
             </div>
 
@@ -608,7 +723,7 @@ function ApplyNoDues() {
             </div>
 
             {/* ================= BUTTONS ================= */}
-            <div className="flex justify-end space-x-4 pt-4">
+            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
               <button
                 type="button"
                 onClick={handleReset}
@@ -616,15 +731,15 @@ function ApplyNoDues() {
               >
                 Reset
               </button>
-              <button
-                type="button"
-                onClick={handleSubmit}
-                className="px-8 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
-              >
-                Submit Application
-              </button>
+             <button
+  type="submit"
+  className="px-8 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
+>
+  Submit Application
+</button>
             </div>
-          </div>
+             
+          </form>
         </div>
       )}
     </div>
@@ -678,14 +793,14 @@ function SelectField({ label, name, value, onChange, required, children }) {
 }
 
 /* ================= VIEW STATUS ================= */
-const ALL_DEPARTMENTS = [
+ const ALL_DEPARTMENTS = [
   "library",
-  "accounts",
   "hostel",
   "tp",
   "sports",
-   "scholarship"
-  // "hod"
+  "scholarship",
+  "accounts",   // ✅ last before HOD
+  "hod"         // ✅ final
 ];
 
 function ViewStatus() {
@@ -710,6 +825,7 @@ function ViewStatus() {
         );
       })
       .then((res) => {
+        
         if (!res) return;
 
         const statusObj = {};
@@ -725,9 +841,15 @@ function ViewStatus() {
 setApplicationId(res.data._id);
 
         // 👇 HOD STATUS ALAG SE (VERY IMPORTANT)
-        statusObj.hod =
-          res.data.finalStatus === "approved" ? "approved" : "pending";
-
+        statusObj.hod = {
+  status:
+    res.data.hodStatus === "rejected"
+      ? "rejected"
+      : res.data.hodStatus === "approved"
+      ? "approved"
+      : "pending",
+  remark: res.data.hodRemark || "",
+};
         setStatusData(statusObj);
       })
 
@@ -742,7 +864,7 @@ setApplicationId(res.data._id);
   <div className="max-w-4xl">
     <h1 className="text-3xl font-bold mb-6">Clearance Status</h1>
 
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className=" grid grid-cols-1 sm:grid-cols-2 gap-4">
       {ALL_DEPARTMENTS.map((dept) => {
         const deptData = statusData[dept] || {};
 const deptStatus = deptData.status || "pending";
@@ -783,7 +905,7 @@ const remarkColor =
     Remark: {deptRemark}
   </p>
 )}
-              {deptStatus === "rejected" && deptRemark && (
+              {/* {deptStatus === "rejected" && deptRemark && (
   <button
     onClick={async () => {
 
@@ -818,6 +940,32 @@ const remarkColor =
     }}
     className="mt-3 px-4 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
   >
+    Fix & Resubmit
+  </button>
+)} */}
+{deptStatus === "rejected" && (
+  <button onClick={async () => {
+  try {
+    await axios.put(
+      `http://localhost:5000/api/student/resubmit/${applicationId}`,
+      {
+        department: dept === "hod" ? "hod" : dept, // 🔥 IMPORTANT
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+
+    alert(`${dept} resubmitted successfully`);
+    window.location.reload();
+
+  } catch (err) {
+    alert(err.response?.data?.message || "Resubmit failed");
+  }
+}}
+    >
     Fix & Resubmit
   </button>
 )}
@@ -893,7 +1041,11 @@ function TrackStatus() {
       })
       .then((res) => {
         if (!res) return;
-        setDepartments(res.data.departments);
+        // setDepartments(res.data.departments);
+        setDepartments({
+  list: res.data.departments,
+  finalStatus: res.data.finalStatus,
+});
       })
       .catch(() => {
         setDepartments([]);
@@ -901,20 +1053,47 @@ function TrackStatus() {
   }, [rollNumber]);
 
   if (!departments) return <p>Loading progress...</p>;
-
+const deptList = departments.list;
+const finalStatus = departments.finalStatus;
    const steps = [
   { label: "Application Submitted", completed: true },
-  ...departments
-    .filter((d) => d.name !== "exam")
+
+  // ✅ Departments except accounts
+  ...deptList
+    .filter((d) => d.name !== "accounts")
     .map((d) => ({
       label: `${d.name.toUpperCase()} - ${d.status.toUpperCase()}`,
       completed: d.status === "approved",
     })),
+
+  // ✅ Accounts
+  {
+    label:
+      deptList
+        .filter((d) => d.name !== "accounts")
+        .every((d) => d.status === "approved")
+        ? "ACCOUNTS - APPROVED"
+        : "ACCOUNTS - PENDING",
+
+    completed: deptList
+      .filter((d) => d.name !== "accounts")
+      .every((d) => d.status === "approved"),
+  },
+
+  // ✅ HOD FINAL (FIXED 🔥)
+  {
+    label:
+      finalStatus === "approved"
+        ? "HOD - APPROVED"
+        : "HOD - FINAL APPROVAL",
+
+    completed: finalStatus === "approved",
+  },
 ];
 
 
   return (
-    <div className="max-w-3xl">
+     <div className="max-w-3xl w-full">
       <h1 className="text-3xl font-bold mb-6">Track Progress</h1>
 
       <div className="bg-white p-6 rounded shadow">
@@ -989,9 +1168,7 @@ function DownloadCertificate() {
         if (!res) return;
 
         const depts = res.data.departments || [];
-        const cleared =
-          depts.length > 0 && depts.every((d) => d.status === "approved");
-
+         const cleared = res.data.finalStatus === "approved";
         setAllCleared(cleared);
 
         // ✅ NOW THIS WILL WORK

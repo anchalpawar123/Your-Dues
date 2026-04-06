@@ -9,6 +9,39 @@ const router = express.Router();
 
 /* ================= APPLY NO DUES ================= */
 router.post("/apply", auth, async (req, res) => {
+  const {
+  name,
+  branch,
+  semester,
+  email,
+  phone,
+  reason,
+  graduationType
+} = req.body;
+
+// ✅ EMPTY CHECK
+if (
+  !name ||
+  !branch ||
+  !semester ||
+  !email ||
+  !phone ||
+  !reason ||
+  !graduationType
+) {
+  return res.status(400).json({
+    message: "All fields are required",
+  });
+}
+
+// ✅ EMAIL CHECK
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+if (!emailRegex.test(email)) {
+  return res.status(400).json({
+    message: "Invalid email",
+  });
+}
   try {
     const already = await NoDuesApplication.findOne({
       rollNumber: req.user.rollNumber,
@@ -22,10 +55,9 @@ router.post("/apply", auth, async (req, res) => {
       { name: "library" },
       { name: "accounts" },
       { name: "tp" },
-      // { name: "scholarship" },
-
-      // { name: "hod" },
-       
+      { name: "hostel" },
+      { name: "sports" },
+      { name: "scholarship" },
     ];
 
     req.body.isSportsMember =
@@ -34,44 +66,17 @@ router.post("/apply", auth, async (req, res) => {
     req.body.isHosteller =
       req.body.isHosteller === true || req.body.isHosteller === "true";
 
-      // ✅ ADD THIS BELOW isSportsMember
-req.body.isScholarshipHolder =
-  req.body.isScholarshipHolder === true ||req.body.isScholarshipHolder === "true";
-    if (req.body.isHosteller) {
-      departments.push({ name: "hostel" });
-    } else {
-      departments.push({
-        name: "hostel",
-        status: "approved",
-        remark: "Not a hostel resident",
-      });
-    }
-
-    if (req.body.isSportsMember) {
-      departments.push({ name: "sports" });
-    } else {
-      departments.push({
-        name: "sports",
-        status: "approved",
-        remark: "Not a sports team member",
-      });
-    }
-
-    // ✅ ADD THIS BELOW SPORTS BLOCK
-if (req.body.isScholarshipHolder) {
-  departments.push({ name: "scholarship" });
-} else {
-  departments.push({
-    name: "scholarship",
-    status: "approved",
-    remark: "Not a scholarship student",
-  });
-}
+    // ✅ ADD THIS BELOW isSportsMember
+    req.body.isScholarshipHolder =
+      req.body.isScholarshipHolder === true ||
+      req.body.isScholarshipHolder === "true";
 
     const application = new NoDuesApplication({
       ...req.body,
+      branch: req.body.branch.trim().toUpperCase(), //
       rollNumber: req.user.rollNumber,
       studentId: req.user._id,
+      semester: req.body.semester, // 🔥 FORCE THIS
       departments,
       finalStatus: "pending", // ✅ ADD HERE
       hodStatus: "pending", // ✅ ADD HERE
@@ -139,6 +144,7 @@ router.get("/certificate/:id", auth, async (req, res) => {
       departments: app.departments,
       hodRemark: app.hodRemark,
       approvalDate: app.updatedAt,
+       hodName: app.hodName
     });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
@@ -153,9 +159,8 @@ router.get("/notifications", auth, async (req, res) => {
   res.json(notes);
 });
 
-
 /* ================= RESUBMIT APPLICATION ================= */
- router.put("/resubmit/:id", auth, async (req, res) => {
+router.put("/resubmit/:id", auth, async (req, res) => {
   try {
     const { department } = req.body;
 
@@ -174,10 +179,28 @@ router.get("/notifications", auth, async (req, res) => {
       });
     }
 
+    // ================= 🔥 HOD RESUBMIT =================
+if (department === "hod") {
+
+  if (app.hodStatus !== "rejected") {
+    return res.status(400).json({
+      message: "HOD is not rejected",
+    });
+  }
+
+  app.hodStatus = "pending";
+  app.hodRemark = "";
+
+  app.finalStatus = "hod_pending"; // 🔥 VERY IMPORTANT
+
+  await app.save();
+
+  return res.json({
+    message: "HOD resubmitted successfully",
+  });
+}
     // find specific department
-    const deptObj = app.departments.find(
-      (d) => d.name === department
-    );
+    const deptObj = app.departments.find((d) => d.name === department);
 
     if (!deptObj) {
       return res.status(404).json({
@@ -201,7 +224,6 @@ router.get("/notifications", auth, async (req, res) => {
     res.json({
       message: `${department} resubmitted successfully`,
     });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({
@@ -210,11 +232,8 @@ router.get("/notifications", auth, async (req, res) => {
   }
 });
 
- 
-
 router.put("/profile-pic", authMiddleware, async (req, res) => {
   try {
-
     const { image } = req.body;
 
     await User.findByIdAndUpdate(req.user._id, {
@@ -222,21 +241,19 @@ router.put("/profile-pic", authMiddleware, async (req, res) => {
     });
 
     res.json({ message: "Profile updated" });
-
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
 });
 router.get("/profile", authMiddleware, async (req, res) => {
-
   const user = await User.findById(req.user._id);
 
-  res.json({
-    name: user.name,
-    rollNumber: user.rollNumber,
-    profilePic: user.profilePic
-  });
-
+   res.json({
+  name: user.name,
+  rollNumber: user.rollNumber,
+  email: user.email,   // ✅ ADD THIS
+  profilePic: user.profilePic,
+});
 });
 
 export default router;

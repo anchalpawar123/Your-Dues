@@ -4,6 +4,8 @@
 import axios from "axios";
 
 export default function LibraryDashboard() {
+  
+  const [isOpen, setIsOpen] = useState(false);
   const [applications, setApplications] = useState([]);
   const [selectedApp, setSelectedApp] = useState(null);
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -164,11 +166,20 @@ export default function LibraryDashboard() {
   };
 
   return (
+    <> 
     <div className="min-h-screen bg-gray-50 flex">
       {/* ============ LEFT SIDEBAR ============ */}
-      <div className="w-64 bg-gradient-to-b from-blue-800 to-blue-900 text-white flex flex-col">
+      {/* <div className="w-64 bg-gradient-to-b from-blue-800 to-blue-900 text-white flex flex-col"> */}
+      <div className={`fixed top-0 left-0 h-full w-64 bg-gradient-to-b from-blue-800 to-blue-900 text-white flex flex-col shadow-2xl transform transition-transform duration-300 z-50
+${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
         {/* Logo/Header Section */}
-        <div className="p-6 border-b border-blue-700">
+       <div className="p-6 border-b border-blue-700 relative">
+           <button 
+    className="md:hidden absolute top-4 right-4 text-white text-xl"
+    onClick={() => setIsOpen(false)}
+  >
+    ✕
+  </button>
           <div className="flex items-center space-x-3">
             
             <div>
@@ -257,36 +268,35 @@ export default function LibraryDashboard() {
       </div>
 
       {/* ============ MAIN CONTENT AREA ============ */}
-      <div className="flex-1 flex flex-col">
+       <div className="flex-1 flex flex-col ml-0 md:ml-64">
         {/* Top Header Bar */}
-        <div className="bg-white border-b px-6 py-4 shadow-sm">
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-xl font-bold text-gray-800">
-                {activeTab === "dashboard" && "Dashboard Overview"}
-                {activeTab === "pending" && "Pending Applications"}
-                {activeTab === "history" && "Application History"}
-              </h2>
-              <p className="text-sm text-gray-600 mt-1">
-                {/* {activeTab === "dashboard" && "Monitor library clearance applications"} */}
-                {activeTab === "pending" && "Review and process pending applications"}
-                {activeTab === "history" && "View all processed applications"}
-              </p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <p className="text-xs text-gray-500">Last updated</p>
-                <p className="text-sm font-medium text-gray-800">
-                  {new Date().toLocaleTimeString('en-IN', { 
-                    hour: '2-digit', 
-                    minute: '2-digit',
-                    hour12: true 
-                  }).toLowerCase()}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <div className="bg-white border-b px-4 md:px-6 py-4 shadow-sm">
+
+  {/* TOP ROW */}
+  <div className="flex items-center justify-between">
+
+    <h2 className="text-xl font-bold text-gray-800">
+      {activeTab === "dashboard" && "Dashboard Overview"}
+      {activeTab === "pending" && "Pending Applications"}
+      {activeTab === "history" && "Application History"}
+    </h2>
+
+    <button 
+      className="md:hidden text-gray-700 text-2xl"
+      onClick={() => setIsOpen(true)}
+    >
+      ☰
+    </button>
+
+  </div>
+
+  {/* SECOND ROW */}
+  <p className="text-sm text-gray-600 mt-1">
+    {activeTab === "pending" && "Review and process pending applications"}
+    {activeTab === "history" && "View all processed applications"}
+  </p>
+
+</div>
 
         {/* Content Section */}
         <div className="flex-1 overflow-auto p-6">
@@ -532,6 +542,7 @@ export default function LibraryDashboard() {
                         <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Roll No</th>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Name</th>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Branch</th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Semester</th>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Status</th>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Processed On</th>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Remarks</th>
@@ -552,9 +563,17 @@ export default function LibraryDashboard() {
                               {app.branch}
                             </span>
                           </td>
+                          <td className="px-6 py-4">
+  <div className="text-sm text-gray-900">
+    {app.semester || "N/A"}
+  </div>
+</td>
                            <td className="px-6 py-4">
   {getStatusBadge(
-    app.departments.find((d) => d.name === "library")?.status
+    // app.departments.find((d) => d.name === "library")?.status
+    app.departments.find(
+  (d) => d.name?.toLowerCase().trim() === "library"
+)?.status
   )}
 </td>
 
@@ -563,11 +582,15 @@ export default function LibraryDashboard() {
                               {new Date(app.updatedAt || Date.now()).toLocaleDateString('en-IN')}
                             </div>
                           </td>
-                          <td className="px-6 py-4">
-                            <div className="text-sm text-gray-900 max-w-xs truncate">
-                              {app.remark || "No remarks"}
-                            </div>
-                          </td>
+                           <td className="px-6 py-4">
+  <div className="text-sm text-gray-900 max-w-xs truncate">
+    {
+      app.departments.find(
+  (d) => d.name?.toLowerCase().trim() === "library"
+)?.remark || "No remarks" 
+    }
+  </div>
+</td>
                         </tr>
                       ))}
                     </tbody>
@@ -698,5 +721,12 @@ export default function LibraryDashboard() {
         </div>
       )}
     </div>
+     {isOpen && (
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-40 z-40 md:hidden"
+        onClick={() => setIsOpen(false)}
+      ></div>
+    )}
+    </>
   );
 }

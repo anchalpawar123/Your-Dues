@@ -21,7 +21,12 @@ const userSchema = new mongoose.Schema(
   },
 },
     
-
+semester: {   // ✅ YAHI ADD KARNA HAI
+  type: String,
+  required: function () {
+    return this.role === "student";
+  },
+},
 
     // ===== ADMIN / DEPARTMENT / HOD =====
     email: {

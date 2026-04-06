@@ -19,7 +19,13 @@ import {
 import axios from "axios";
 
 export default function AdminDashboard() {
+  
+  const [isOpen, setIsOpen] = useState(false);
   const [activePage, setActivePage] = useState("dashboard");
+  const [reportData, setReportData] = useState([]);
+  const [reportPage, setReportPage] = useState(1);
+const reportPerPage = 20;
+const [selectedBranch, setSelectedBranch] = useState("");
   const [stats, setStats] = useState({
     totalStudents: 0,
     totalDepartments: 0,
@@ -30,7 +36,7 @@ export default function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [loading, setLoading] = useState(false);
-  
+  const [search, setSearch] = useState("");
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 10;
@@ -39,12 +45,14 @@ export default function AdminDashboard() {
   const [studentTab, setStudentTab] = useState("single"); // "single" or "bulk"
 
   // Form states for Add Student
-  const [studentForm, setStudentForm] = useState({
-    name: "",
-    rollNumber: "",
-    branch: "",
-    email: ""
-  });
+   const [studentForm, setStudentForm] = useState({
+  name: "",
+  rollNumber: "",
+  branch: "",
+  semester: "", // ✅ ADD
+  email: ""
+});
+
 
   // Bulk upload states
   const [csvFile, setCsvFile] = useState(null);
@@ -75,11 +83,29 @@ export default function AdminDashboard() {
     fetchDashboardStats();
   }, []);
 
-  useEffect(() => {
-    if (activePage === "users") {
-      fetchUsers();
-    }
-  }, [activePage]);
+//   useEffect(() => {
+//   if (activePage === "users") {
+//     fetchUsers();
+//   }
+
+//   if (activePage === "report") {
+//     fetchReportTable();
+//   }
+// }, [activePage]);
+
+useEffect(() => {
+  if (activePage === "users") {
+    fetchUsers();
+  }
+
+  if (activePage === "report") {
+    fetchReportTable(selectedBranch, "report1"); // ✅ 8 sem
+  }
+
+  if (activePage === "report2") {
+    fetchReportTable(selectedBranch, "report2"); // ✅ बाकी
+  }
+}, [activePage, selectedBranch]);
 
   const fetchDashboardStats = async () => {
     try {
@@ -108,12 +134,37 @@ export default function AdminDashboard() {
     }
   };
 
+  const fetchReportTable = async (branch = "", type = "report1") => {
+  try {
+    const res = await axios.get(
+      `http://localhost:5000/api/admin/report-table?branch=${branch}&type=${type}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    setReportData(res.data);
+
+  } catch (err) {
+    console.error(err);
+  }
+};
+
   const handleAddStudent = async (e) => {
     e.preventDefault();
-    if (!studentForm.name || !studentForm.rollNumber || !studentForm.branch) {
-      alert("⚠️ Please fill all required fields!");
-      return;
-    }
+     if (!studentForm.name.trim()) {
+  return alert("Name required");
+}
+
+if (!studentForm.rollNumber.trim()) {
+  return alert("Roll number required");
+}
+
+if (!studentForm.branch) {
+  return alert("Select branch");
+}
+
+if (!studentForm.semester) {
+  return alert("Select semester");
+}
 
     try {
       await axios.post(
@@ -122,7 +173,13 @@ export default function AdminDashboard() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       alert("✅ Student added successfully!");
-      setStudentForm({ name: "", rollNumber: "", branch: "", email: "" });
+      setStudentForm({
+  name: "",
+  rollNumber: "",
+  branch: "",
+  semester: "",
+  email: ""
+});
       fetchDashboardStats();
     } catch (err) {
       alert("❌ Failed to add student: " + (err.response?.data?.message || "Error"));
@@ -150,12 +207,15 @@ export default function AdminDashboard() {
       const headers = lines[0].split(',').map(h => h.trim());
       const data = lines.slice(1).map(line => {
         const values = line.split(',').map(v => v.trim());
-        return {
-          name: values[0] || "",
-          rollNumber: values[1] || "",
-          branch: values[2] || "",
-          email: values[3] || ""
-        };
+         
+          return {
+  name: values[0] || "",
+  rollNumber: values[1] || "",
+  branch: values[2] || "",
+  semester: values[3] || "",
+  email: values[4] || "" // ✅ FIX
+};
+       
       });
 
       setCsvPreview(data);
@@ -259,7 +319,13 @@ export default function AdminDashboard() {
   };
 
   const resetStudentForm = () => {
-    setStudentForm({ name: "", rollNumber: "", branch: "", email: "" });
+     setStudentForm({
+  name: "",
+  rollNumber: "",
+  branch: "",
+  semester: "", // ✅ ADD
+  email: ""
+});
   };
 
   const resetDeptForm = () => {
@@ -312,7 +378,8 @@ const filteredUsers = users.filter(user => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex">
       {/* ============ LEFT SIDEBAR (FIXED) ============ */}
-      <div className="w-64 bg-gradient-to-b from-blue-900 via-blue-800 to-blue-900 text-white flex flex-col fixed h-screen shadow-2xl">
+       <div className={`fixed top-0 left-0 h-full w-64 bg-gradient-to-b from-blue-900 via-blue-800 to-blue-900 text-white flex flex-col shadow-2xl transform transition-transform duration-300 z-50
+${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
         {/* Admin Header */}
         <div className="p-6 border-b border-blue-700/50">
           <div className="flex items-center space-x-3">
@@ -320,6 +387,12 @@ const filteredUsers = users.filter(user => {
               <Shield className="w-6 h-6 text-blue-900" />
             </div>
             <div>
+              <button 
+  className="md:hidden absolute top-4 right-4 text-white text-xl"
+  onClick={() => setIsOpen(false)}
+>
+  ✕
+</button>
               <h1 className="text-lg font-bold">Admin Panel</h1>
               <p className="text-xs text-blue-200">Control Center</p>
             </div>
@@ -376,17 +449,42 @@ const filteredUsers = users.filter(user => {
             <span className="font-medium">Add HOD</span>
           </button>
 
+
+<button
+  onClick={() => setActivePage("users")}
+  className={`w-full flex items-center px-4 py-3 rounded-xl transition-all duration-200 ${
+    activePage === "users"
+      ? "bg-white text-blue-900 shadow-lg transform scale-105"
+      : "text-blue-100 hover:bg-blue-700/50"
+  }`}
+>
+  <Users className="mr-3 w-5 h-5" />
+  <span className="font-medium">Total Users</span>
+</button>
+
           <button
-            onClick={() => setActivePage("users")}
-            className={`w-full flex items-center px-4 py-3 rounded-xl transition-all duration-200 ${
-              activePage === "users"
-                ? "bg-white text-blue-900 shadow-lg transform scale-105"
-                : "text-blue-100 hover:bg-blue-700/50"
-            }`}
-          >
-            <Users className="mr-3 w-5 h-5" />
-            <span className="font-medium">User Management</span>
-          </button>
+  onClick={() => setActivePage("report")}
+  className={`w-full flex items-center px-4 py-3 rounded-xl transition-all duration-200 ${
+    activePage === "report"
+      ? "bg-white text-blue-900 shadow-lg transform scale-105"
+      : "text-blue-100 hover:bg-blue-700/50"
+  }`}
+>
+  <FileText className="mr-3 w-5 h-5" />
+  <span className="font-medium">Reports</span>
+</button>
+
+<button
+  onClick={() => setActivePage("report2")}
+  className={`w-full flex items-center px-4 py-3 rounded-xl transition-all duration-200 ${
+    activePage === "report2"
+      ? "bg-white text-blue-900 shadow-lg transform scale-105"
+      : "text-blue-100 hover:bg-blue-700/50"
+  }`}
+>
+  <FileText className="mr-3 w-5 h-5" />
+  <span className="font-medium">Report 2</span>
+</button>
         </nav>
 
         {/* Logout Button */}
@@ -402,27 +500,53 @@ const filteredUsers = users.filter(user => {
       </div>
 
       {/* ============ MAIN CONTENT AREA (RIGHT SIDE) ============ */}
-      <div className="flex-1 ml-64">
+      {/* <div className="flex-1 ml-64"> */}
+      <div className="flex-1 ml-0 md:ml-64">
         {/* Top Header */}
-        <div className="bg-white border-b px-8 py-5 shadow-sm">
-          <h2 className="text-2xl font-bold text-gray-800">
-            {activePage === "dashboard" && "Dashboard Overview"}
-            {activePage === "add-student" && "Student Management"}
-            {activePage === "add-department" && "Add New Department"}
-            {activePage === "add-hod" && "Add New HOD"}
-            {activePage === "users" && "User Management"}
-          </h2>
+      {/* <div className="bg-white border-b px-6 py-4 shadow-sm"> */}
+      {/* <div className="bg-white border-b px-4 md:px-6 py-4 shadow-sm flex items-center justify-between"> */}
+      <div className="bg-white border-b px-4 md:px-6 py-4 shadow-sm">
+         
+          
+         <div className="flex items-center justify-between w-full">
+
+  {/* LEFT SIDE - HEADING */}
+  
+    {/* <h2 className="text-2xl font-bold text-gray-800"> */}
+   <h2 className="text-2xl font-bold text-gray-800">
+  {activePage === "dashboard" && "Dashboard Overview"}
+  {activePage === "add-student" && "Student Management"}
+  {activePage === "add-department" && "Add New Department"}
+  {activePage === "add-hod" && "Add New HOD"}
+  {activePage === "report" && "Branch Wise Reports"}
+  {activePage === "report2" && "Other Students Report"}
+</h2>
+
+    {/* <p className="text-sm text-gray-500 mt-1">
+      {activePage === "dashboard" && "Welcome back! Here's your system overview"}
+    </p> */}
+  
+
+  {/* RIGHT SIDE - HAMBURGER */}
+  <button 
+    className="md:hidden text-gray-700 text-2xl"
+    onClick={() => setIsOpen(true)}
+  >
+    ☰
+  </button>
+
+</div>
           <p className="text-sm text-gray-500 mt-1">
             {activePage === "dashboard" && "Welcome back! Here's your system overview"}
             {activePage === "add-student" && "Add students individually or upload in bulk"}
             {activePage === "add-department" && "Register a new department"}
             {activePage === "add-hod" && "Register a new Head of Department"}
-            {activePage === "users" && "View and manage all system users"}
+             
           </p>
         </div>
 
         {/* Content */}
-        <div className="p-8">
+         <div className="p-4">
           {/* ============ DASHBOARD HOME ============ */}
           {activePage === "dashboard" && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -486,7 +610,8 @@ const filteredUsers = users.filter(user => {
 
           {/* ============ STUDENT MANAGEMENT PAGE ============ */}
           {activePage === "add-student" && (
-            <div className="max-w-5xl mx-auto">
+            // <div className="max-w-5xl mx-auto">
+            <div className="max-w-5xl mx-auto mt-4 md:mt-6">
               {/* Tabs */}
               <div className="bg-white rounded-t-2xl shadow-lg border border-gray-100 overflow-hidden">
                 <div className="flex border-b border-gray-200">
@@ -569,6 +694,30 @@ const filteredUsers = users.filter(user => {
                           </select>
                         </div>
 
+{/* Semester */}
+<div>
+  <label className="block text-sm font-semibold text-gray-700 mb-2">
+    Semester <span className="text-red-500">*</span>
+  </label>
+  <select
+    value={studentForm.semester}
+    onChange={(e) =>
+      setStudentForm({ ...studentForm, semester: e.target.value })
+    }
+    className="w-full border border-gray-300 rounded-lg px-4 py-3"
+  >
+    <option value="">Select Semester</option>
+    <option value="1">1st</option>
+    <option value="2">2nd</option>
+    <option value="3">3rd</option>
+    <option value="4">4th</option>
+    <option value="5">5th</option>
+    <option value="6">6th</option>
+    <option value="7">7th</option>
+    <option value="8">8th</option>
+  </select>
+</div>
+
                         {/* Email */}
                         <div>
                           <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -634,10 +783,10 @@ const filteredUsers = users.filter(user => {
                             Your CSV file should have the following columns in this exact order:
                           </p>
                           <div className="bg-white rounded-lg p-4 border border-amber-200 font-mono text-xs">
-                            <div className="text-gray-600 mb-2">name,rollNumber,branch,email</div>
-                            <div className="text-gray-800">Rahul Kumar,0832CS221001,CSE,rahul@gmail.com</div>
-                            <div className="text-gray-800">Priya Singh,0832CS221002,CSE,priya@gmail.com</div>
-                            <div className="text-gray-800">Amit Sharma,0832ME221001,ME,amit@gmail.com</div>
+                            <div className="text-gray-600 mb-2"> name,rollNumber,branch,semester,email</div>
+                            <div className="text-gray-800">Rahul Kumar,0832CS221001,CSE,8,rahul@gmail.com</div>
+                            <div className="text-gray-800">Priya Singh,0832CS221002,CSE,5,priya@gmail.com</div>
+                            <div className="text-gray-800">Amit Sharma,0832ME221001,ME,7,amit@gmail.com</div>
                           </div>
                           <p className="text-xs text-amber-600 mt-3">
                             💡 <strong>Note:</strong> Email is optional. Default password will be the Roll Number.
@@ -691,6 +840,9 @@ const filteredUsers = users.filter(user => {
                                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Name</th>
                                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Roll Number</th>
                                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Branch</th>
+                                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+  Semester
+</th>
                                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Email</th>
                                 </tr>
                               </thead>
@@ -701,6 +853,9 @@ const filteredUsers = users.filter(user => {
                                     <td className="px-4 py-3 text-sm font-medium text-gray-900">{student.name}</td>
                                     <td className="px-4 py-3 text-sm text-gray-900">{student.rollNumber}</td>
                                     <td className="px-4 py-3 text-sm text-gray-900">{student.branch}</td>
+                                    <td className="px-4 py-3 text-sm text-gray-900">
+  {student.semester}
+</td>
                                     <td className="px-4 py-3 text-sm text-gray-600">{student.email || '-'}</td>
                                   </tr>
                                 ))}
@@ -886,6 +1041,10 @@ const filteredUsers = users.filter(user => {
 <option value="CSIT">Computer Science & Information Technology</option>
   </select>
 </div>
+{/* Semester */}
+ 
+ {/* Semester */}
+ 
                     {/* Password */}
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -927,9 +1086,9 @@ const filteredUsers = users.filter(user => {
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
               {/* Search and Filter Header */}
               <div className="px-6 py-5 border-b bg-gradient-to-r from-gray-50 to-white">
-                <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+                 <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
                   {/* Search Box */}
-                  <div className="relative flex-1 max-w-md">
+                  <div className="relative w-full md:flex-1 md:max-w-md">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <input
                       type="text"
@@ -955,7 +1114,8 @@ const filteredUsers = users.filter(user => {
               </div>
 
               {/* Table */}
-              <div className="overflow-x-auto">
+              {/* <div className="overflow-x-auto"> */}
+              <div className="w-full overflow-x-auto">
                 {loading ? (
                   <div className="p-16 text-center">
                     <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mb-4"></div>
@@ -969,13 +1129,17 @@ const filteredUsers = users.filter(user => {
                   </div>
                 ) : (
                   <>
-                    <table className="w-full">
+                    {/* <table className="w-full"> */}
+                    <table className="min-w-[600px] w-full">
                       <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                         <tr>
                           <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Name</th>
                           <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Role</th>
                           <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Email / Roll</th>
                           <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Department</th>
+                          <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+  Semester
+</th>
                           <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Action</th>
                         </tr>
                       </thead>
@@ -1006,6 +1170,11 @@ const filteredUsers = users.filter(user => {
                                 {user.department || user.branch || user.role || '-'}
                               </div>
                             </td>
+                            <td className="px-6 py-4">
+  <div className="text-sm text-gray-900">
+    {user.semester || '-'}
+  </div>
+</td>
                             <td className="px-6 py-4">
                               <button
                                 onClick={() => setDeleteModal({ show: true, userId: user._id, userName: user.name })}
@@ -1064,9 +1233,311 @@ const filteredUsers = users.filter(user => {
               </div>
             </div>
           )}
-        </div>
+          
+
+        {activePage === "report" && (
+  // <div className="p-6">
+<div className="p-4 w-full flex flex-col">
+    <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-none">
+
+      
+
+      {/* ✅ 2. TOTAL COUNT (YAHI ADD KARNA HAI) */}
+      <div className="mt-3">
+  <button className="bg-blue-600 text-white px-5 py-2 rounded-full shadow-md font-semibold">
+    Total Approved Students: {reportData.length}
+  </button>
+</div>
+
+      {/* ✅ 3. SEARCH + DROPDOWN + EXPORT (EK LINE ME) */}
+      {/* <div className="flex items-center gap-3 mt-4 mb-6"> */}
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-3 mt-4 mb-6">
+
+        {/* SEARCH */}
+        <input
+          type="text"
+          placeholder="Search by name or roll..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="border px-4 py-2 rounded-lg"
+        />
+
+        {/* DROPDOWN */}
+        <select
+          value={selectedBranch}
+          onChange={(e) => {
+  setSelectedBranch(e.target.value);
+  fetchReportTable(
+    e.target.value,
+    activePage === "report" ? "report1" : "report2"
+  );
+}}
+          className="border px-4 py-2 rounded-lg"
+        >
+          <option value="">All Branch</option>
+          <option value="CSE">CSE</option>
+          <option value="IT">IT</option>
+          <option value="ME">ME</option>
+          <option value="CE">CE</option>
+          <option value="ECE">ECE</option>
+          <option value="EE">EE</option>
+          <option value="AIDS">AIDS</option>
+          <option value="CSIT">CSIT</option>
+        </select>
+
+        {/* EXPORT BUTTON */}
+        <button
+          onClick={() => {
+            const csv = [
+              ["Roll", "Name", "Branch"],
+              ...reportData.map(item => [
+                item.rollNumber,
+                item.name,
+                item.branch,
+                item.semester
+              ])
+            ]
+              .map(e => e.join(","))
+              .join("\n");
+
+            const blob = new Blob([csv], { type: "text/csv" });
+            const url = window.URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "report.csv";
+            a.click();
+          }}
+          className="bg-green-500 text-white px-4 py-2 rounded-lg"
+        >
+          Export CSV
+        </button>
+
       </div>
 
+      {/* ✅ 4. BRANCH CARDS (TABLE SE JUST UPAR) */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        {[...new Set(reportData.map(item => item.branch))].map(branch => {
+          const count = reportData.filter(item => item.branch === branch).length;
+
+          return (
+            <div key={branch} className="bg-blue-50 p-4 rounded-xl text-center">
+              <h3 className="font-bold text-lg">{branch}</h3>
+              <p className="text-blue-700">{count} Approved</p>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ✅ 5. TABLE */}
+     <div className="w-full overflow-x-auto">
+
+  {/* <table className="min-w-[600px] w-full text-sm"> */}
+<table className="min-w-[600px] w-full text-sm font-medium">
+    {/* <thead className="border-b bg-gray-50"> */}
+     <thead className="border-b bg-gray-100 text-gray-700 uppercase text-xs tracking-wider">
+  <tr>
+    <th className="py-2 px-2 text-left">Roll</th>
+    <th className="py-2 px-2 text-left">Name</th>
+    <th className="py-2 px-2 text-left">Branch</th>
+    <th className="py-2 px-2 text-left">Semester</th> {/* ✅ ADD */}
+    <th className="py-2 px-2 text-left">Status</th>
+  </tr>
+</thead>
+
+    <tbody>
+      { reportData
+  // .filter(item => Number(item.semester) === 8)
+  .map((item, index) => (
+        // <tr key={index} className="border-b border-gray-200">
+        <tr key={index} className="border-b border-gray-200 hover:bg-gray-50 transition">
+
+          <td className="py-3 px-2">{item.rollNumber}</td>
+           <td className="py-3 px-2">
+  <span className="px-3 py-1 text-xs font-semibold bg-blue-100 text-blue-700 rounded-full">
+    {item.name}
+  </span>
+</td>
+          {/* <td className="py-3 px-2">{item.branch}</td> */}
+           <td className="py-3 px-2 text-gray-700">
+  {item.branch}
+</td>
+
+<td className="py-3 px-2">
+  {item.semester}
+</td>
+            <td className="py-3 px-2">
+  <span className="px-3 py-1 text-xs font-semibold bg-green-100 text-green-700 rounded-full">
+    Approved
+  </span>
+</td>
+
+        </tr>
+      ))}
+    </tbody>
+
+  </table>
+
+{/* ================= REPORT 2 ================= */}
+
+ 
+</div>
+    </div>
+  </div>
+)}
+
+{activePage === "report2" && (
+
+    <div className="p-4 w-full flex flex-col">
+    <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-none">
+
+      {/* ✅ TOTAL COUNT */}
+    <div className="flex flex-col md:flex-row items-start md:items-center gap-3 mb-6">
+  {/* SEARCH */}
+  <input
+    type="text"
+    placeholder="Search by name or roll..."
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+    className="border px-4 py-2 rounded-lg"
+  />
+
+  {/* DROPDOWN */}
+  <select
+    value={selectedBranch}
+    onChange={(e) => {
+  setSelectedBranch(e.target.value);
+  fetchReportTable(
+    e.target.value,
+    activePage === "report" ? "report1" : "report2"
+  );
+}}
+    className="border px-4 py-2 rounded-lg"
+  >
+    <option value="">All Branch</option>
+    <option value="CSE">CSE</option>
+    <option value="IT">IT</option>
+    <option value="ME">ME</option>
+    <option value="CE">CE</option>
+    <option value="ECE">ECE</option>
+    <option value="EE">EE</option>
+    <option value="AIDS">AIDS</option>
+    <option value="CSIT">CSIT</option>
+  </select>
+
+  {/* EXPORT */}
+  <button
+    onClick={() => {
+      const filtered = reportData.filter(item => Number(item.semester) !== 8);
+
+      const csv = [
+        ["Roll", "Name", "Branch", "Semester"],
+        ...filtered.map(item => [
+          item.rollNumber,
+          item.name,
+          item.branch,
+          item.semester
+        ])
+      ]
+        .map(e => e.join(","))
+        .join("\n");
+
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "report2.csv";
+      a.click();
+    }}
+    className="bg-green-500 text-white px-4 py-2 rounded-lg"
+  >
+    Export CSV
+  </button>
+
+</div>
+
+      {/* ✅ BRANCH CARDS */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 mb-6">
+        {[...new Set(
+          reportData
+            .filter(item => Number(item.semester) !== 8)
+            .map(item => item.branch)
+        )].map(branch => {
+
+          const count = reportData.filter(
+            item => item.branch === branch && Number(item.semester) !== 8
+          ).length;
+
+          return (
+            <div key={branch} className="bg-blue-50 p-4 rounded-xl text-center">
+              <h3 className="font-bold text-lg">{branch}</h3>
+              <p className="text-blue-700">{count} Approved</p>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ✅ TABLE */}
+      <div className="w-full overflow-x-auto">
+
+        <table className="min-w-[600px] w-full text-sm font-medium">
+
+          <thead className="border-b bg-gray-100 text-gray-700 uppercase text-xs tracking-wider">
+            <tr>
+              <th className="py-2 px-2 text-left">Roll</th>
+              <th className="py-2 px-2 text-left">Name</th>
+              <th className="py-2 px-2 text-left">Branch</th>
+              <th className="py-2 px-2 text-left">Semester</th>
+              <th className="py-2 px-2 text-left">Status</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {reportData
+              .filter(item => Number(item.semester) !== 8)
+              .map((item, index) => (
+                <tr key={index} className="border-b border-gray-200 hover:bg-gray-50">
+
+                  <td className="py-3 px-2">{item.rollNumber}</td>
+
+                  <td className="py-3 px-2">
+                    <span className="px-3 py-1 text-xs font-semibold bg-blue-100 text-blue-700 rounded-full">
+                      {item.name}
+                    </span>
+                  </td>
+
+                  <td className="py-3 px-2 text-gray-700">
+                    {item.branch}
+                  </td>
+
+                  <td className="py-3 px-2">
+                    {item.semester}
+                  </td>
+
+                  <td className="py-3 px-2">
+                    <span className="px-3 py-1 text-xs font-semibold bg-green-100 text-green-700 rounded-full">
+                      Approved
+                    </span>
+                  </td>
+
+                </tr>
+              ))}
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+  </div>
+
+)}
+
+        </div>
+      </div>
+ 
+    
       {/* ============ DELETE CONFIRMATION MODAL ============ */}
       {deleteModal.show && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -1096,6 +1567,14 @@ const filteredUsers = users.filter(user => {
           </div>
         </div>
       )}
+
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-40 z-40 md:hidden"
+          onClick={() => setIsOpen(false)}
+        ></div>
+      )}
+
     </div>
   );
 }
