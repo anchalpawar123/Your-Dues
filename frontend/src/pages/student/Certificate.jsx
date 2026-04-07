@@ -58,7 +58,7 @@ export default function NoDuesCertificate() {
       format: "a4",
       orientation: "portrait",
     },
-    pagebreak: { mode: ["avoid-all", "css", "legacy"] },
+    pagebreak: { mode: ["css", "legacy"] },
   };
 
   html2pdf().set(options).from(element).save();
@@ -96,7 +96,7 @@ export default function NoDuesCertificate() {
             <h2 className="text-lg font-bold text-gray-800">No Dues Certificate</h2>
             <p className="text-sm text-gray-600">Ready to download or print</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={handleDownload}
               className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
@@ -118,18 +118,16 @@ export default function NoDuesCertificate() {
       {/* Certificate - A4 Size */}
         <div className="print:bg-white">
 
-         <div
+       <div
   id="certificate"
   className="certificate-container bg-white print:shadow-none mx-auto"
   style={{
-    width: "210mm",
-    minHeight: "297mm",
-    padding: "15mm",
-    margin: "20px auto",
-    boxSizing: "border-box",
-    overflow: "hidden",
-  }}
->
+  width: "100%",
+  maxWidth: "210mm",
+  padding: "20px",
+  margin: "10px auto",
+  boxSizing: "border-box",
+}}>
           {/* Certificate Content */}
           <div className="p-0">
 
@@ -154,7 +152,7 @@ export default function NoDuesCertificate() {
               </div>
 
               {/* College Name */}
-              <h1 className="text-3xl font-bold text-gray-900 uppercase tracking-wide mb-2">
+              <h1 className="text-xl md:text-3xl font-bold text-gray-900 uppercase tracking-wide mb-2">
                 {certificateData.collegeName || "Chameli Devi Gruop Of Institutions Indore"}
               </h1>
               
@@ -171,7 +169,7 @@ export default function NoDuesCertificate() {
 
             {/* Certificate Title */}
             <div className="text-center mb-8">
-               <h3 className="text-2xl font-bold text-gray-900 uppercase tracking-wide inline-block pb-2 px-6">
+               <h3 className="text-lg md:text-2xl font-bold text-gray-900 uppercase tracking-wide inline-block pb-2 px-6">
   Your Dues Certificate
 </h3>
 
@@ -180,20 +178,20 @@ export default function NoDuesCertificate() {
 
             {/* Certificate Number */}
             <div className="text-right mb-6">
-              <p className="text-sm text-gray-600">
+              {/* <p className="text-sm text-gray-600">
                 Certificate No: <span className="font-semibold">{certificateData.certificateNumber || `NDC/${new Date().getFullYear()}/${certificateData.rollNumber}`}</span>
-              </p>
+              </p> */}
               <p className="text-sm text-gray-600">
                 Date of Issue: <span className="font-semibold">{new Date(certificateData.approvalDate || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
               </p>
             </div>
 
             {/* Student Details Box */}
-            <div className="border-2 border-gray-800 rounded p-6 mb-8 bg-gray-50">
+            <div className="border-2 border-gray-800 rounded p-6 mb-8 bg-gray-50 break-inside-avoid">
               <h3 className="text-lg font-bold text-gray-800 mb-4 border-b border-gray-300 pb-2">
                 Student Details
               </h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-gray-600">Student Name:</p>
                   <p className="text-base font-semibold text-gray-900">{certificateData.name}</p>
@@ -233,7 +231,7 @@ export default function NoDuesCertificate() {
             </div>
 
             {/* Department Clearance Table */}
-            <div className="mb-8">
+         <div className="mb-8 overflow-x-auto break-inside-avoid">
               <h3 className="text-lg font-bold text-gray-800 mb-4 border-b border-gray-300 pb-2">
                 Department Clearance Status
               </h3>
@@ -265,14 +263,14 @@ export default function NoDuesCertificate() {
                 </tbody>
               </table>
             </div>
-
+<div className="page-break"></div> 
             {/* HOD Approval Section */}
-            <div className="mb-8 border-2 border-gray-800 rounded p-6 bg-blue-50">
+            <div className="mb-8 border-2 border-gray-800 rounded p-6 bg-blue-50 break-inside-avoid">
               <h3 className="text-lg font-bold text-gray-800 mb-4">Final Approval</h3>
-              <div className="grid grid-cols-2 gap-6">
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">HOD Name:</p>
-                  <p className="text-base font-semibold text-gray-900">{certificateData.hodName || "Mr.Radheshyam Acholiya"}</p>
+                  <p className="text-base font-semibold text-gray-900">{certificateData.hodName ? certificateData.hodName : "HOD"}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Approval Date:</p>
@@ -335,10 +333,10 @@ export default function NoDuesCertificate() {
                 <p className="text-xs text-gray-500 mb-1">
                    This is a system-generated certificate and does not require a manual signature.
                 </p>
-                <p className="text-xs text-gray-500">
+                {/* <p className="text-xs text-gray-500">
                   For verification, please contact the examination department with certificate number: 
                   <span className="font-semibold"> {certificateData.certificateNumber || `NDC/${new Date().getFullYear()}/${certificateData.rollNumber}`}</span>
-                </p>
+                </p> */}
                 <p className="text-xs text-gray-400 mt-2">
                   Generated on: {new Date().toLocaleString('en-IN')}
                 </p>
@@ -349,32 +347,42 @@ export default function NoDuesCertificate() {
       </div>
 
       {/* Print Styles */}
-      <style jsx>{`
-        @media print {
-          body {
-            margin: 0;
-            padding: 0;
-          }
-          
-          .certificate-container {
-            box-shadow: none !important;
-            margin: 0 !important;
-            width: 210mm !important;
-            min-height: 297mm !important;
-          }
-          
-          /* Remove any margins and paddings that might affect print */
-          @page {
-            size: A4;
-            margin: 0;
-          }
-          
-          /* Hide scrollbars during print */
-          ::-webkit-scrollbar {
-            display: none;
-          }
-        }
-      `}</style>
+    <style jsx>{`
+  @media print {
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    .certificate-container {
+      box-shadow: none !important;
+      margin: 0 !important;
+      width: 210mm !important;
+    }
+
+    /* 🔥 CUT FIX */
+    .break-inside-avoid {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    /* 🔥 PAGE BREAK CONTROL */
+    .page-break {
+      page-break-before: always;
+      break-before: page;
+    }
+
+    @page {
+      size: A4;
+      margin: 10mm;
+    }
+
+    /* scroll hide */
+    ::-webkit-scrollbar {
+      display: none;
+    }
+  }
+`}</style>
     </>
   );
 }

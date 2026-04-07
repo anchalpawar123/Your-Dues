@@ -659,7 +659,17 @@ if (formData.phone.length < 10) {
                   required
                 >
                   <option value="">Select Type</option>
-                  <option value="final">Final Year Graduation</option>
+ 
+
+<option value="final">Final Year Graduation</option>
+
+<option value="dropout">Dropout (Leaving in Between)</option>
+
+<option value="transfer">Transfer  </option>
+
+ 
+
+{/* <option value="internship_exit">Leaving for Internship/Job</option> */}
                 </SelectField>
                 <SelectField
                   label="Are you a hostel resident?"
@@ -867,8 +877,15 @@ setApplicationId(res.data._id);
     <div className=" grid grid-cols-1 sm:grid-cols-2 gap-4">
       {ALL_DEPARTMENTS.map((dept) => {
         const deptData = statusData[dept] || {};
-const deptStatus = deptData.status || "pending";
-const deptRemark = deptData.remark || "";
+// const deptStatus = deptData?.status || "pending";
+const deptStatus =
+  dept === "hod"
+    ? String(statusData?.hod?.status || "").toLowerCase()
+    : String(deptData?.status || "pending").toLowerCase();
+const deptRemark =
+  dept === "hod"
+    ? statusData.hod?.remark || ""
+    : deptData.remark || "";
 
 const remarkColor =
   deptStatus === "approved"
@@ -943,29 +960,37 @@ const remarkColor =
     Fix & Resubmit
   </button>
 )} */}
-{deptStatus === "rejected" && (
-  <button onClick={async () => {
-  try {
-    await axios.put(
-      `http://localhost:5000/api/student/resubmit/${applicationId}`,
-      {
-        department: dept === "hod" ? "hod" : dept, // 🔥 IMPORTANT
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+{(dept === "hod"
+  ? statusData.hod?.status === "rejected"
+  : deptStatus?.toLowerCase() === "rejected") && (
+  <button
+    onClick={async () => {
+      try {
+        console.log("Resubmitting:", dept);
+
+        await axios.put(
+          `http://localhost:5000/api/student/resubmit/${applicationId}`,
+          {
+            department: dept, // ✅ correct dept send
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        alert(`${dept.toUpperCase()} resubmitted successfully`);
+
+        window.location.reload(); // refresh
+
+      } catch (err) {
+        console.error(err.response?.data || err.message);
+        alert(err.response?.data?.message || "Resubmit failed");
       }
-    );
-
-    alert(`${dept} resubmitted successfully`);
-    window.location.reload();
-
-  } catch (err) {
-    alert(err.response?.data?.message || "Resubmit failed");
-  }
-}}
-    >
+    }}
+    className="mt-3 px-4 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+  >
     Fix & Resubmit
   </button>
 )}
@@ -1031,10 +1056,9 @@ function TrackStatus() {
       .get(`http://localhost:5000/api/student/check/${rollNumber}`)
       .then((res) => {
         if (!res.data.applied) {
-          setDepartments([]);
-          return;
-        }
-
+  setDepartments({ list: [], finalStatus: "pending" });
+  return;
+}
         return axios.get(
           `http://localhost:5000/api/student/status/${rollNumber}`,
         );
@@ -1048,47 +1072,35 @@ function TrackStatus() {
 });
       })
       .catch(() => {
-        setDepartments([]);
-      });
+  setDepartments({ list: [], finalStatus: "pending" });
+});
   }, [rollNumber]);
 
-  if (!departments) return <p>Loading progress...</p>;
-const deptList = departments.list;
-const finalStatus = departments.finalStatus;
-   const steps = [
+ if (!departments || !departments.list) return <p>Loading progress...</p>;
+const deptList = departments?.list || [];
+const finalStatus = departments?.finalStatus || "pending";
+ const steps = [
   { label: "Application Submitted", completed: true },
 
-  // ✅ Departments except accounts
-  ...deptList
-    .filter((d) => d.name !== "accounts")
-    .map((d) => ({
-      label: `${d.name.toUpperCase()} - ${d.status.toUpperCase()}`,
-      completed: d.status === "approved",
-    })),
+  ...ALL_DEPARTMENTS.map((dept) => {
+    if (dept === "hod") {
+      return {
+        label:
+          finalStatus === "approved"
+            ? "HOD - APPROVED"
+            : "HOD - FINAL APPROVAL",
+        completed: finalStatus === "approved",
+      };
+    }
 
-  // ✅ Accounts
-  {
-    label:
-      deptList
-        .filter((d) => d.name !== "accounts")
-        .every((d) => d.status === "approved")
-        ? "ACCOUNTS - APPROVED"
-        : "ACCOUNTS - PENDING",
+    const deptData = deptList.find((d) => d.name === dept);
+    const status = deptData?.status || "pending";
 
-    completed: deptList
-      .filter((d) => d.name !== "accounts")
-      .every((d) => d.status === "approved"),
-  },
-
-  // ✅ HOD FINAL (FIXED 🔥)
-  {
-    label:
-      finalStatus === "approved"
-        ? "HOD - APPROVED"
-        : "HOD - FINAL APPROVAL",
-
-    completed: finalStatus === "approved",
-  },
+    return {
+      label: `${dept.toUpperCase()} - ${status.toUpperCase()}`,
+      completed: status === "approved",
+    };
+  }),
 ];
 
 

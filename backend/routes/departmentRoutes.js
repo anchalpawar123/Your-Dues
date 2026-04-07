@@ -29,9 +29,10 @@ if (dept === "accounts") {
   filter.finalStatus = "accounts_pending";
 }
  
-        const apps = await NoDuesApplication.find({
-  finalStatus: { $ne: "approved" }
-}).sort({ createdAt: -1 }).sort({ createdAt: -1 });
+//         const apps = await NoDuesApplication.find({
+//   finalStatus: { $ne: "approved" }
+// }).sort({ createdAt: -1 }).sort({ createdAt: -1 });
+const apps = await NoDuesApplication.find().sort({ createdAt: -1 });
 
 // ✅ manual filtering (ACCURATE)
 const filteredApps = apps.filter(app => {

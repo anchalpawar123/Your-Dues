@@ -80,7 +80,7 @@ router.put(
       
 app.hodName = req.user.name;   // 👈 ye add kar
  
-
+app.hodBranch = req.user.branch;
       await app.save();
 
       // 🔔 DASHBOARD NOTIFICATION (ONLY HERE)
@@ -129,25 +129,7 @@ doc.end();
 await new Promise(resolve => setTimeout(resolve, 1000));
 
 // 🔹 Send Mail with Attachment
-await transporter.sendMail({
-  from: process.env.MAIL_USER,
-  to: app.email,
-  subject: "No Dues Certificate Approved",
-  text: `Hello ${app.name},
-
-Your No Dues has been approved.
-
-Certificate is attached with this email.
-
-Regards,
-College Administration`,
-  attachments: [
-    {
-      filename: `${app.rollNumber}_NoDues.pdf`,
-      path: filePath,
-    },
-  ],
-});
+ 
 
 // 🔹 Delete file after sending (server clean rahega)
 fs.unlinkSync(filePath);

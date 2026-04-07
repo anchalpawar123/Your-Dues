@@ -17,7 +17,19 @@ import {
   ChevronRight
 } from "lucide-react";
 import axios from "axios";
+// ✅ VALIDATION FUNCTIONS
+const validateEmail = (email) => {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return regex.test(email);
+};
 
+const validateName = (name) => {
+  return name.trim().length >= 3;
+};
+
+const validateRoll = (roll) => {
+  return roll.trim().length >= 5;
+};
 export default function AdminDashboard() {
   
   const [isOpen, setIsOpen] = useState(false);
@@ -148,23 +160,37 @@ useEffect(() => {
   }
 };
 
+const indexOfLastReport = reportPage * reportPerPage;
+const indexOfFirstReport = indexOfLastReport - reportPerPage;
+const currentReportData = reportData.slice(indexOfFirstReport, indexOfLastReport);
+
   const handleAddStudent = async (e) => {
     e.preventDefault();
-     if (!studentForm.name.trim()) {
-  return alert("Name required");
+     if (!validateName(studentForm.name)) {
+  return alert("❌ Enter valid name (min 3 chars)");
 }
 
-if (!studentForm.rollNumber.trim()) {
-  return alert("Roll number required");
+if (!validateRoll(studentForm.rollNumber)) {
+  return alert("❌ Invalid roll number");
 }
 
 if (!studentForm.branch) {
-  return alert("Select branch");
+  return alert("❌ Select branch");
 }
 
 if (!studentForm.semester) {
-  return alert("Select semester");
+  return alert("❌ Select semester");
 }
+
+if (!studentForm.email) {
+  return alert("❌ Email required");
+}
+
+if (!validateEmail(studentForm.email)) {
+  return alert("❌ Invalid email");
+}
+ 
+ 
 
     try {
       await axios.post(
@@ -217,6 +243,19 @@ if (!studentForm.semester) {
 };
        
       });
+      const invalid = data.some(
+  s =>
+    !validateName(s.name) ||
+    !validateRoll(s.rollNumber) ||
+    !s.branch ||
+    !s.semester ||
+    (s.email && !validateEmail(s.email))
+);
+
+if (invalid) {
+  alert("❌ CSV  invalid data  ");
+  return;
+}
 
       setCsvPreview(data);
     };
@@ -252,11 +291,17 @@ if (!studentForm.semester) {
 
   const handleAddDepartment = async (e) => {
     e.preventDefault();
-    if (!deptForm.departmentName || !deptForm.email || !deptForm.password) {
-      alert("⚠️ Please fill all fields!");
-      return;
-    }
+  if (!deptForm.departmentName) {
+  return alert("❌ Select department");
+}
 
+if (!validateEmail(deptForm.email)) {
+  return alert("❌ Enter valid email");
+}
+
+if (deptForm.password.length < 6) {
+  return alert("❌ Password must be at least 6 characters");
+}  
     try {
       await axios.post(
         "http://localhost:5000/api/admin/add-department",
@@ -275,10 +320,21 @@ if (!studentForm.semester) {
 
   const handleAddHOD = async (e) => {
     e.preventDefault();
-    if (!hodForm.name || !hodForm.email || !hodForm.password || !hodForm.branch) {
-      alert("⚠️ Please fill all fields!");
-      return;
-    }
+    if (!validateName(hodForm.name)) {
+  return alert("❌ Invalid name");
+}
+
+if (!validateEmail(hodForm.email)) {
+  return alert("❌ Invalid email");
+}
+
+if (hodForm.password.length < 6) {
+  return alert("❌ Password must be 6+ characters");
+}
+
+if (!hodForm.branch) {
+  return alert("❌ Select branch");
+}  
 
     try {
       await axios.post(
@@ -471,7 +527,7 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
   }`}
 >
   <FileText className="mr-3 w-5 h-5" />
-  <span className="font-medium">Reports</span>
+  <span className="font-medium">Report (8-sem)</span>
 </button>
 
 <button
@@ -483,7 +539,7 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
   }`}
 >
   <FileText className="mr-3 w-5 h-5" />
-  <span className="font-medium">Report 2</span>
+  <span className="font-medium">Report (1-7 sem)</span>
 </button>
         </nav>
 
@@ -663,13 +719,14 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
                           <label className="block text-sm font-semibold text-gray-700 mb-2">
                             Roll Number <span className="text-red-500">*</span>
                           </label>
-                          <input
-                            type="text"
-                            value={studentForm.rollNumber}
-                            onChange={(e) => setStudentForm({ ...studentForm, rollNumber: e.target.value })}
-                            className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                            placeholder="e.g., 0832CS221001"
-                          />
+                     <input
+  type="text"
+  required
+  value={studentForm.rollNumber}
+  onChange={(e) => setStudentForm({ ...studentForm, rollNumber: e.target.value })}
+  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+  placeholder="Enter roll number"
+/>
                         </div>
 
                         {/* Branch */}
@@ -678,7 +735,8 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
                             Branch <span className="text-red-500">*</span>
                           </label>
                           <select
-                            value={studentForm.branch}
+  required
+  value={studentForm.branch}
                             onChange={(e) => setStudentForm({ ...studentForm, branch: e.target.value })}
                             className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                           >
@@ -700,7 +758,8 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
     Semester <span className="text-red-500">*</span>
   </label>
   <select
-    value={studentForm.semester}
+  required
+  value={studentForm.semester}
     onChange={(e) =>
       setStudentForm({ ...studentForm, semester: e.target.value })
     }
@@ -723,9 +782,10 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
                           <label className="block text-sm font-semibold text-gray-700 mb-2">
                             Email <span className="text-gray-400 text-xs">(optional)</span>
                           </label>
-                          <input
-                            type="email"
-                            value={studentForm.email}
+                        <input
+  type="email"
+  required
+  value={studentForm.email}
                             onChange={(e) => setStudentForm({ ...studentForm, email: e.target.value })}
                             className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                             placeholder="student@example.com"
@@ -1335,25 +1395,22 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
   {/* <table className="min-w-[600px] w-full text-sm"> */}
 <table className="min-w-[600px] w-full text-sm font-medium">
     {/* <thead className="border-b bg-gray-50"> */}
-     <thead className="border-b bg-gray-100 text-gray-700 uppercase text-xs tracking-wider">
-  <tr>
-    <th className="py-2 px-2 text-left">Roll</th>
-    <th className="py-2 px-2 text-left">Name</th>
-    <th className="py-2 px-2 text-left">Branch</th>
-    <th className="py-2 px-2 text-left">Semester</th> {/* ✅ ADD */}
-    <th className="py-2 px-2 text-left">Status</th>
+    <thead className="bg-gradient-to-r from-gray-50 to-gray-100"><tr>
+   <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Roll</th>
+<th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Name</th>
+<th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Branch</th>
+<th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Semester</th>
+<th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Status</th>
   </tr>
 </thead>
 
     <tbody>
-      { reportData
-  // .filter(item => Number(item.semester) === 8)
-  .map((item, index) => (
+     { currentReportData.map((item, index) => (
         // <tr key={index} className="border-b border-gray-200">
-        <tr key={index} className="border-b border-gray-200 hover:bg-gray-50 transition">
+        <tr key={index} className="hover:bg-blue-50/50 transition-colors">
 
-          <td className="py-3 px-2">{item.rollNumber}</td>
-           <td className="py-3 px-2">
+          <td className="px-6 py-4">{item.rollNumber}</td>
+         <td className="px-6 py-4">
   <span className="px-3 py-1 text-xs font-semibold bg-blue-100 text-blue-700 rounded-full">
     {item.name}
   </span>
@@ -1363,10 +1420,10 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
   {item.branch}
 </td>
 
-<td className="py-3 px-2">
+<td className="px-6 py-4">
   {item.semester}
 </td>
-            <td className="py-3 px-2">
+           <td className="px-6 py-4">
   <span className="px-3 py-1 text-xs font-semibold bg-green-100 text-green-700 rounded-full">
     Approved
   </span>
@@ -1376,14 +1433,38 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
       ))}
     </tbody>
 
-  </table>
+  
 
 {/* ================= REPORT 2 ================= */}
+</table>
 
+<div className="flex justify-center items-center mt-6 gap-3">
+  <button
+    onClick={() => setReportPage(reportPage - 1)}
+    disabled={reportPage === 1}
+    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50"
+  >
+    Prev
+  </button>
+
+  <span className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold">
+    {reportPage}
+  </span>
+
+  <button
+    onClick={() => setReportPage(reportPage + 1)}
+    disabled={indexOfLastReport >= reportData.length}
+    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50"
+  >
+    Next
+  </button>
+</div>
+
+</div>
  
 </div>
     </div>
-  </div>
+   
 )}
 
 {activePage === "report2" && (
@@ -1483,25 +1564,25 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
 
         <table className="min-w-[600px] w-full text-sm font-medium">
 
-          <thead className="border-b bg-gray-100 text-gray-700 uppercase text-xs tracking-wider">
+          <thead className="bg-gradient-to-r from-gray-50 to-gray-100">  
             <tr>
-              <th className="py-2 px-2 text-left">Roll</th>
-              <th className="py-2 px-2 text-left">Name</th>
-              <th className="py-2 px-2 text-left">Branch</th>
-              <th className="py-2 px-2 text-left">Semester</th>
-              <th className="py-2 px-2 text-left">Status</th>
+             <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Roll</th>
+<th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Name</th>
+<th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Branch</th>
+<th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Semester</th>
+<th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase">Status</th>
             </tr>
           </thead>
 
           <tbody>
-            {reportData
-              .filter(item => Number(item.semester) !== 8)
-              .map((item, index) => (
+            {currentReportData
+  .filter(item => Number(item.semester) !== 8)
+  .map((item, index) => (
                 <tr key={index} className="border-b border-gray-200 hover:bg-gray-50">
 
-                  <td className="py-3 px-2">{item.rollNumber}</td>
+                 <td className="px-6 py-4">{item.rollNumber}</td>
 
-                  <td className="py-3 px-2">
+                  <td className="px-6 py-4">
                     <span className="px-3 py-1 text-xs font-semibold bg-blue-100 text-blue-700 rounded-full">
                       {item.name}
                     </span>
@@ -1511,11 +1592,11 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
                     {item.branch}
                   </td>
 
-                  <td className="py-3 px-2">
+              <td className="px-6 py-4">
                     {item.semester}
                   </td>
 
-                  <td className="py-3 px-2">
+              <td className="px-6 py-4">
                     <span className="px-3 py-1 text-xs font-semibold bg-green-100 text-green-700 rounded-full">
                       Approved
                     </span>
@@ -1527,10 +1608,34 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
 
         </table>
 
+<div className="flex justify-center items-center mt-6 gap-3">
+  <button
+    onClick={() => setReportPage(reportPage - 1)}
+    disabled={reportPage === 1}
+    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50"
+  >
+    Prev
+  </button>
+
+  <span className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold">
+    {reportPage}
+  </span>
+
+  <button
+    onClick={() => setReportPage(reportPage + 1)}
+    disabled={indexOfLastReport >= reportData.length}
+    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50"
+  >
+    Next
+  </button>
+</div>
+
+</div>
+
       </div>
 
     </div>
-  </div>
+   
 
 )}
 

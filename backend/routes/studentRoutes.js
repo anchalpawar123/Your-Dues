@@ -101,13 +101,17 @@ router.get("/status/:rollNumber", async (req, res) => {
       return res.status(404).json({ message: "Application not found" });
     }
 
-    res.json({
-      _id: app._id,
-      departments: app.departments,
-      finalStatus: app.finalStatus,
-      examStatus: app.examStatus,
-      examRemark: app.examRemark,
-    });
+   res.json({
+  _id: app._id,
+  departments: app.departments,
+  finalStatus: app.finalStatus,
+  examStatus: app.examStatus,
+  examRemark: app.examRemark,
+
+  // 🔥 ADD THESE 2 LINES
+  hodStatus: app.hodStatus,
+  hodRemark: app.hodRemark,
+});
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
@@ -180,7 +184,7 @@ router.put("/resubmit/:id", auth, async (req, res) => {
     }
 
     // ================= 🔥 HOD RESUBMIT =================
-if (department === "hod") {
+ if (department === "hod") {
 
   if (app.hodStatus !== "rejected") {
     return res.status(400).json({
@@ -188,10 +192,10 @@ if (department === "hod") {
     });
   }
 
+  // ✅ direct reset
   app.hodStatus = "pending";
   app.hodRemark = "";
-
-  app.finalStatus = "hod_pending"; // 🔥 VERY IMPORTANT
+  app.finalStatus = "hod_pending";
 
   await app.save();
 
@@ -219,6 +223,25 @@ if (department === "hod") {
     deptObj.remark = "";
     deptObj.updatedAt = new Date();
 
+    // 🔥 ADD THIS (MAIN FIX)
+// const allApprovedExceptAccounts = app.departments.every(
+//   (d) => d.name === "accounts" || d.status === "approved"
+// );
+
+// // ✅ RESUBMIT KE BAAD HAMESHA START SE FLOW
+// app.finalStatus = "pending";
+
+// // ✅ sirf HOD reset (safe way)
+// if (app.hodStatus === "approved") {
+//   app.hodStatus = "pending";
+// }
+
+// // HOD reset
+// app.hodStatus = "pending";
+
+// ✅ RESET FLOW (IMPORTANT)
+app.finalStatus = "pending";
+app.hodStatus = "pending";
     await app.save();
 
     res.json({
