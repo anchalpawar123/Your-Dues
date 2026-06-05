@@ -28,7 +28,7 @@ export default function TPDashboard() {
     setLoading(true);
     try {
        const pendingRes = await axios.get(
-  "http://localhost:5000/api/department/tp",
+  "https://yourdues.onrender.com/api/department/tp",
   { headers: { Authorization: `Bearer ${token}` } }
 );
 
@@ -52,7 +52,7 @@ export default function TPDashboard() {
     setHistoryLoading(true);
     try {
       const res = await axios.get(
-  "http://localhost:5000/api/department/tp/history",
+  "https://yourdues.onrender.com/api/department/tp/history",
   { headers: { Authorization: `Bearer ${token}` } }
 );
 
@@ -84,7 +84,7 @@ export default function TPDashboard() {
 
     try {
       await axios.put(
-        `http://localhost:5000/api/department/update/${selectedApp._id}`,
+        `https://yourdues.onrender.com/api/department/update/${selectedApp._id}`,
         {
   department: "tp",
   status: "approved",
@@ -113,7 +113,7 @@ export default function TPDashboard() {
 
   try {
     await axios.put(
-      `http://localhost:5000/api/department/update/${selectedApp._id}`,
+      `https://yourdues.onrender.com/api/department/update/${selectedApp._id}`,
       {
         department: "tp",   // ✅ YAHI FIX HAI
         status: "rejected",

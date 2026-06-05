@@ -28,7 +28,7 @@ export default function HostelDashboard() {
     setLoading(true);
     try {
       const pendingRes = await axios.get(
-        "http://localhost:5000/api/department/hostel",
+        "https://yourdues.onrender.com/api/department/hostel",
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -51,7 +51,7 @@ export default function HostelDashboard() {
     setHistoryLoading(true);
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/department/hostel/history",
+        "https://yourdues.onrender.com/api/department/hostel/history",
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -82,7 +82,7 @@ export default function HostelDashboard() {
 
     try {
       await axios.put(
-        `http://localhost:5000/api/department/update/${selectedApp._id}`,
+        `https://yourdues.onrender.com/api/department/update/${selectedApp._id}`,
         {
           department: "hostel",
           status: "approved",
@@ -110,7 +110,7 @@ export default function HostelDashboard() {
 
     try {
       await axios.put(
-        `http://localhost:5000/api/department/update/${selectedApp._id}`,
+        `https://yourdues.onrender.com/api/department/update/${selectedApp._id}`,
         {
           department: "hostel",
           status: "rejected",

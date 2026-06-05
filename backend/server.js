@@ -15,7 +15,17 @@ dotenv.config();
 const app = express();
 
 // middlewares
-app.use(cors());
+const cors = require("cors");
+
+app.use(
+  cors({
+    origin: [
+      "https://your-dues.vercel.app",
+      "http://localhost:3000"
+    ],
+    credentials: true,
+  })
+);
 // app.use(express.json());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));

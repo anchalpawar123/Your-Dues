@@ -25,7 +25,7 @@ export default function HODDashboard() {
     setLoading(true);
     try {
       const pendingRes = await axios.get(
-        "http://localhost:5000/api/hod/pending",
+        "https://yourdues.onrender.com/api/hod/pending",
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -48,7 +48,7 @@ export default function HODDashboard() {
     setHistoryLoading(true);
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/hod/history",
+        "https://yourdues.onrender.com/api/hod/history",
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -86,7 +86,7 @@ export default function HODDashboard() {
 
     try {
       await axios.put(
-        `http://localhost:5000/api/hod/final-approve/${selectedApp._id}`,
+        `https://yourdues.onrender.com/api/hod/final-approve/${selectedApp._id}`,
         {
           remark,
         },
@@ -112,7 +112,7 @@ export default function HODDashboard() {
 
   try {
     await axios.put(
-      `http://localhost:5000/api/hod/reject/${selectedApp._id}`,
+      `https://yourdues.onrender.com/api/hod/reject/${selectedApp._id}`,
       { remark },
       {
         headers: { Authorization: `Bearer ${token}` },

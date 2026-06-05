@@ -122,7 +122,7 @@ useEffect(() => {
   const fetchDashboardStats = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/admin/stats",
+        "https://yourdues.onrender.com/api/admin/stats",
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setStats(res.data);
@@ -135,7 +135,7 @@ useEffect(() => {
     setLoading(true);
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/admin/users",
+        "https://yourdues.onrender.com/api/admin/users",
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setUsers(res.data);
@@ -149,7 +149,7 @@ useEffect(() => {
   const fetchReportTable = async (branch = "", type = "report1") => {
   try {
     const res = await axios.get(
-      `http://localhost:5000/api/admin/report-table?branch=${branch}&type=${type}`,
+      `https://yourdues.onrender.com/api/admin/report-table?branch=${branch}&type=${type}`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
 
@@ -194,7 +194,7 @@ if (!validateEmail(studentForm.email)) {
 
     try {
       await axios.post(
-        "http://localhost:5000/api/admin/add-student",
+        "https://yourdues.onrender.com/api/admin/add-student",
         { ...studentForm, password: studentForm.rollNumber },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -271,7 +271,7 @@ if (invalid) {
 
   try {
     const res = await axios.post(
-      "http://localhost:5000/api/admin/bulk-upload-students",
+      "https://yourdues.onrender.com/api/admin/bulk-upload-students",
       { students: csvPreview },
       { headers: { Authorization: `Bearer ${token}` } }
     );
@@ -304,7 +304,7 @@ if (deptForm.password.length < 6) {
 }  
     try {
       await axios.post(
-        "http://localhost:5000/api/admin/add-department",
+        "https://yourdues.onrender.com/api/admin/add-department",
         deptForm,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -338,7 +338,7 @@ if (!hodForm.branch) {
 
     try {
       await axios.post(
-        "http://localhost:5000/api/admin/add-hod",
+        "https://yourdues.onrender.com/api/admin/add-hod",
         hodForm,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -354,7 +354,7 @@ if (!hodForm.branch) {
   const handleDeleteUser = async () => {
     try {
       await axios.delete(
-        `http://localhost:5000/api/admin/delete-user/${deleteModal.userId}`,
+        `https://yourdues.onrender.com/api/admin/delete-user/${deleteModal.userId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       alert("✅ User deleted successfully!");

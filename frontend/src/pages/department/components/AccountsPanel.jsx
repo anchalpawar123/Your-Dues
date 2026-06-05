@@ -27,7 +27,7 @@ export default function AccountsDashboard() {
     setLoading(true);
     try {
       const pendingRes = await axios.get(
-        "http://localhost:5000/api/department/accounts",
+        "https://yourdues.onrender.com/api/department/accounts",
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -50,7 +50,7 @@ export default function AccountsDashboard() {
     setHistoryLoading(true);
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/department/accounts/history",
+        "https://yourdues.onrender.com/api/department/accounts/history",
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -82,7 +82,7 @@ export default function AccountsDashboard() {
   try {
     // STEP 1: approve
     await axios.put(
-      `http://localhost:5000/api/department/update/${selectedApp._id}`,
+      `https://yourdues.onrender.com/api/department/update/${selectedApp._id}`,
       {
         department: "accounts",
         status: "approved",
@@ -95,7 +95,7 @@ export default function AccountsDashboard() {
 
     // 🔥 STEP 2: SEND TO HOD (MAIN FIX)
     // await axios.put(
-    //   `http://localhost:5000/api/department/accounts/approve/${selectedApp._id}`,
+    //   `https://yourdues.onrender.com/api/department/accounts/approve/${selectedApp._id}`,
     //   {},
     //   {
     //     headers: { Authorization: `Bearer ${token}` },
@@ -105,7 +105,7 @@ export default function AccountsDashboard() {
     console.log("STEP 2 API CALL START");
 
 const res2 = await axios.put(
-  `http://localhost:5000/api/department/accounts/approve/${selectedApp._id}`,
+  `https://yourdues.onrender.com/api/department/accounts/approve/${selectedApp._id}`,
   {},
   {
     headers: { Authorization: `Bearer ${token}` },
@@ -132,7 +132,7 @@ console.log("STEP 2 RESPONSE:", res2.data);
 
     try {
       await axios.put(
-        `http://localhost:5000/api/department/update/${selectedApp._id}`,
+        `https://yourdues.onrender.com/api/department/update/${selectedApp._id}`,
         {
           department: "accounts",
           status: "rejected",

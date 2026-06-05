@@ -20,7 +20,7 @@ export default function NoDuesCertificate() {
     setLoading(true);
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/student/certificate/${applicationId}`,
+        `https://yourdues.onrender.com/api/student/certificate/${applicationId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setCertificateData(res.data);

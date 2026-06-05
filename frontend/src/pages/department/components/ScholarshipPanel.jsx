@@ -39,7 +39,7 @@ export default function ScholarshipDashboard() {
 
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/department/scholarship",
+        "https://yourdues.onrender.com/api/department/scholarship",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -66,7 +66,7 @@ export default function ScholarshipDashboard() {
 
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/department/scholarship/history",
+        "https://yourdues.onrender.com/api/department/scholarship/history",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -107,7 +107,7 @@ export default function ScholarshipDashboard() {
     }
 
     await axios.put(
-      `http://localhost:5000/api/department/update/${selectedApp._id}`,
+      `https://yourdues.onrender.com/api/department/update/${selectedApp._id}`,
       {
         department: "scholarship",
         status: "approved",
@@ -132,7 +132,7 @@ alert("Application approved successfully!");
     }
 
     await axios.put(
-      `http://localhost:5000/api/department/update/${selectedApp._id}`,
+      `https://yourdues.onrender.com/api/department/update/${selectedApp._id}`,
       {
         department: "scholarship",
         status: "rejected",

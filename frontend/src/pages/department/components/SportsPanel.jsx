@@ -28,7 +28,7 @@ export default function SportsDashboard() {
     setLoading(true);
     try {
       const pendingRes = await axios.get(
-        "http://localhost:5000/api/department/sports",
+        "https://yourdues.onrender.com/api/department/sports",
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -51,7 +51,7 @@ export default function SportsDashboard() {
     setHistoryLoading(true);
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/department/sports/history",
+        "https://yourdues.onrender.com/api/department/sports/history",
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -82,7 +82,7 @@ export default function SportsDashboard() {
 
     try {
       await axios.put(
-        `http://localhost:5000/api/department/update/${selectedApp._id}`,
+        `https://yourdues.onrender.com/api/department/update/${selectedApp._id}`,
         {
           department: "sports",
           status: "approved",
@@ -110,7 +110,7 @@ export default function SportsDashboard() {
 
     try {
       await axios.put(
-        `http://localhost:5000/api/department/update/${selectedApp._id}`,
+        `https://yourdues.onrender.com/api/department/update/${selectedApp._id}`,
         {
           department: "sports",
           status: "rejected",
