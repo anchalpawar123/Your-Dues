@@ -6,7 +6,7 @@ const [profilePic, setProfilePic] = useState("");
 
 useEffect(() => {
   axios
-    .get("https://yourdues.onrender.com/api/student/profile", {
+    .get("http://localhost:5000/api/student/profile", {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
@@ -58,7 +58,7 @@ useEffect(() => {
 
     reader.onload = async () => {
       await axios.put(
-        "https://yourdues.onrender.com/api/student/profile-pic",
+        "http://localhost:5000/api/student/profile-pic",
         { image: reader.result },
         {
           headers: {

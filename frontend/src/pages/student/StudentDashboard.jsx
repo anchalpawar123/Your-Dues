@@ -18,7 +18,7 @@ export default function StudentDashboard() {
  
   useEffect(() => {
   axios
-    .get("https://yourdues.onrender.com/api/student/profile", {
+    .get("http://localhost:5000/api/student/profile", {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
@@ -78,7 +78,7 @@ ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
       reader.onload = async () => {
 
         await axios.put(
-          "https://yourdues.onrender.com/api/student/profile-pic",
+          "http://localhost:5000/api/student/profile-pic",
           { image: reader.result },
           {
             headers: {
@@ -104,7 +104,7 @@ ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
             <button
   onClick={async () => {
     await axios.put(
-      "https://yourdues.onrender.com/api/student/profile-pic",
+      "http://localhost:5000/api/student/profile-pic",
       { image: "" },
       {
         headers: {
@@ -238,14 +238,14 @@ function DashboardHome() {
     if (!rollNumber) return;
 
     axios
-      .get(`https://yourdues.onrender.com/api/student/check/${rollNumber}`)
+      .get(`http://localhost:5000/api/student/check/${rollNumber}`)
       .then((res) => {
         if (!res.data.applied) {
           setStatusData({});
           return;
         }
         return axios.get(
-          `https://yourdues.onrender.com/api/student/status/${rollNumber}`,
+          `http://localhost:5000/api/student/status/${rollNumber}`,
         );
       })
       .then((res) => {
@@ -287,7 +287,7 @@ statusObj.hod =
   // 🔔 NOTIFICATIONS
   useEffect(() => {
     axios
-      .get("https://yourdues.onrender.com/api/student/notifications", {
+      .get("http://localhost:5000/api/student/notifications", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -414,7 +414,7 @@ function ApplyNoDues() {
     if (!rollNumber) return;
 
     axios
-      .get(`https://yourdues.onrender.com/api/student/check/${rollNumber}`)
+      .get(`http://localhost:5000/api/student/check/${rollNumber}`)
       .then((res) => {
         setAlreadyApplied(res.data.applied === true);
       })
@@ -482,7 +482,7 @@ if (formData.phone.length < 10) {
       console.log("ROLL =>", payload.rollNumber); // ✅ YAHAN
 
       const res = await axios.post(
-        "https://yourdues.onrender.com/api/student/apply",
+        "http://localhost:5000/api/student/apply",
         payload,
         {
           headers: {
@@ -823,7 +823,7 @@ function ViewStatus() {
     if (!rollNumber) return;
 
     axios
-      .get(`https://yourdues.onrender.com/api/student/check/${rollNumber}`)
+      .get(`http://localhost:5000/api/student/check/${rollNumber}`)
       .then((res) => {
         if (!res.data.applied) {
           setStatusData({});
@@ -831,7 +831,7 @@ function ViewStatus() {
         }
 
         return axios.get(
-          `https://yourdues.onrender.com/api/student/status/${rollNumber}`,
+          `http://localhost:5000/api/student/status/${rollNumber}`,
         );
       })
       .then((res) => {
@@ -931,7 +931,7 @@ const remarkColor =
 
       try {
         await axios.put(
-          `https://yourdues.onrender.com/api/student/resubmit/${applicationId}`,
+          `http://localhost:5000/api/student/resubmit/${applicationId}`,
           {
             department: dept, // ✅ VERY IMPORTANT
           },
@@ -969,7 +969,7 @@ const remarkColor =
         console.log("Resubmitting:", dept);
 
         await axios.put(
-          `https://yourdues.onrender.com/api/student/resubmit/${applicationId}`,
+          `http://localhost:5000/api/student/resubmit/${applicationId}`,
           {
             department: dept, // ✅ correct dept send
           },
@@ -1053,14 +1053,14 @@ function TrackStatus() {
     if (!rollNumber) return;
 
     axios
-      .get(`https://yourdues.onrender.com/api/student/check/${rollNumber}`)
+      .get(`http://localhost:5000/api/student/check/${rollNumber}`)
       .then((res) => {
         if (!res.data.applied) {
   setDepartments({ list: [], finalStatus: "pending" });
   return;
 }
         return axios.get(
-          `https://yourdues.onrender.com/api/student/status/${rollNumber}`,
+          `http://localhost:5000/api/student/status/${rollNumber}`,
         );
       })
       .then((res) => {
@@ -1165,7 +1165,7 @@ function DownloadCertificate() {
     if (!rollNumber) return;
 
     axios
-      .get(`https://yourdues.onrender.com/api/student/check/${rollNumber}`)
+      .get(`http://localhost:5000/api/student/check/${rollNumber}`)
       .then((res) => {
         if (!res.data.applied) {
           setAllCleared(false);
@@ -1173,7 +1173,7 @@ function DownloadCertificate() {
         }
 
         return axios.get(
-          `https://yourdues.onrender.com/api/student/status/${rollNumber}`,
+          `http://localhost:5000/api/student/status/${rollNumber}`,
         );
       })
       .then((res) => {

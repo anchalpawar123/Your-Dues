@@ -30,13 +30,13 @@ export default function LibraryDashboard() {
     setLoading(true);
     try {
       const pendingRes = await axios.get(
-  "https://yourdues.onrender.com/api/department/library",
+  "http://localhost:5000/api/department/library",
   { headers: { Authorization: `Bearer ${token}` } }
 );
 
       
       // const statsRes = await axios.get(
-      //   "https://yourdues.onrender.com/api/department/library/stats/today",
+      //   "http://localhost:5000/api/department/library/stats/today",
       //   { headers: { Authorization: `Bearer ${token}` } }
       // );
       
@@ -59,7 +59,7 @@ export default function LibraryDashboard() {
   setHistoryLoading(true);
   try {
     const res = await axios.get(
-      "https://yourdues.onrender.com/api/department/library/history",
+      "http://localhost:5000/api/department/library/history",
       { headers: { Authorization: `Bearer ${token}` } }
     );
 
@@ -91,7 +91,7 @@ export default function LibraryDashboard() {
 
     try {
       await axios.put(
-  `https://yourdues.onrender.com/api/department/update/${selectedApp._id}`,
+  `http://localhost:5000/api/department/update/${selectedApp._id}`,
   {
     department: "library",
     status: "approved",
@@ -119,7 +119,7 @@ export default function LibraryDashboard() {
 
     try {
       await axios.put(
-  `https://yourdues.onrender.com/api/department/update/${selectedApp._id}`,
+  `http://localhost:5000/api/department/update/${selectedApp._id}`,
   {
     department: "library",
     status: "rejected",
