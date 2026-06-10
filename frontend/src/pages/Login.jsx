@@ -59,13 +59,12 @@ export default function Login() {
           scholarship: "/department/scholarship",
         };
 
-        const path = roleRoutes[backendRole];
-        if (path) {
-          navigate(path);
-          window.location.reload(); // 🔥 YE LINE ADD KARO
-        } else {
-          alert("No dashboard found for this role");
-        }
+       const path = roleRoutes[backendRole];
+if (path) {
+  navigate(path);
+} else {
+  alert("No dashboard found for this role");
+}
       }, 1200);
     } catch (error) {
       setMessage(error.response?.data?.message || "❌ Invalid credentials");
