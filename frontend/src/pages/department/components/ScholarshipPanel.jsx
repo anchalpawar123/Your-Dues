@@ -160,11 +160,12 @@ export default function ScholarshipDashboard() {
   };
 
   const handleLogout = () => {
-    if (window.confirm("Are you sure you want to logout?")) {
-      alert("Logged out!");
-    }
-  };
+  if (window.confirm("Are you sure you want to logout?")) {
+    localStorage.clear();
 
+    window.location.href = "/login";
+  }
+};
   // ── Status Badge ───────────────────────────────────────────────────────────
   const getStatusBadge = (status) => {
     switch (status) {
