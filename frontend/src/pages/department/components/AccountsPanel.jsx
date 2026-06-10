@@ -1,5 +1,12 @@
- import { useEffect, useState } from "react";
-import { LayoutDashboard, Clock, History, CheckCircle, LogOut,CheckCircle2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  LayoutDashboard,
+  Clock,
+  History,
+  CheckCircle,
+  LogOut,
+  CheckCircle2,
+} from "lucide-react";
 import axios from "axios";
 
 export default function AccountsDashboard() {
@@ -11,7 +18,7 @@ export default function AccountsDashboard() {
   const [loading, setLoading] = useState(true);
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
-  
+
   // Form states
   const [allFeesPaid, setAllFeesPaid] = useState(false);
   const [noFinePending, setNoFinePending] = useState(false);
@@ -27,18 +34,17 @@ export default function AccountsDashboard() {
     setLoading(true);
     try {
       const pendingRes = await axios.get(
-        "http://localhost:5000/api/department/accounts",
-        { headers: { Authorization: `Bearer ${token}` } }
+        "https://your-dues.onrender.com/api/department/accounts",
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
       setApplications(pendingRes.data);
-      
+
       setStats({
         pending: pendingRes.data.length,
         approved: 0,
-        rejected: 0
+        rejected: 0,
       });
-
     } catch (err) {
       console.error("Error:", err);
     } finally {
@@ -50,8 +56,8 @@ export default function AccountsDashboard() {
     setHistoryLoading(true);
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/department/accounts/history",
-        { headers: { Authorization: `Bearer ${token}` } }
+        "https://your-dues.onrender.com/api/department/accounts/history",
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
       setHistory(Array.isArray(res.data) ? res.data : []);
@@ -70,59 +76,58 @@ export default function AccountsDashboard() {
   }, [activeTab]);
 
   const handleApprove = async () => {
-  if (!allFeesPaid || !noFinePending) {
-    alert("⚠️ Please verify all fee requirements!");
-    return;
-  }
-  if (!remark.trim()) {
-    alert("⚠️ Remark is required!");
-    return;
-  }
+    if (!allFeesPaid || !noFinePending) {
+      alert("⚠️ Please verify all fee requirements!");
+      return;
+    }
+    if (!remark.trim()) {
+      alert("⚠️ Remark is required!");
+      return;
+    }
 
-  try {
-    // STEP 1: approve
-    await axios.put(
-      `http://localhost:5000/api/department/update/${selectedApp._id}`,
-      {
-        department: "accounts",
-        status: "approved",
-        remark,
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
+    try {
+      // STEP 1: approve
+      await axios.put(
+        `https://your-dues.onrender.com/api/department/update/${selectedApp._id}`,
+        {
+          department: "accounts",
+          status: "approved",
+          remark,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
-    // 🔥 STEP 2: SEND TO HOD (MAIN FIX)
-    // await axios.put(
-    //   `http://localhost:5000/api/department/accounts/approve/${selectedApp._id}`,
-    //   {},
-    //   {
-    //     headers: { Authorization: `Bearer ${token}` },
-    //   }
-    // );
+      // 🔥 STEP 2: SEND TO HOD (MAIN FIX)
+      // await axios.put(
+      //   `https://your-dues.onrender.com/api/department/accounts/approve/${selectedApp._id}`,
+      //   {},
+      //   {
+      //     headers: { Authorization: `Bearer ${token}` },
+      //   }
+      // );
 
-    console.log("STEP 2 API CALL START");
+      console.log("STEP 2 API CALL START");
 
-const res2 = await axios.put(
-  `http://localhost:5000/api/department/accounts/approve/${selectedApp._id}`,
-  {},
-  {
-    headers: { Authorization: `Bearer ${token}` },
-  }
-);
+      const res2 = await axios.put(
+        `https://your-dues.onrender.com/api/department/accounts/approve/${selectedApp._id}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
-console.log("STEP 2 RESPONSE:", res2.data);
+      console.log("STEP 2 RESPONSE:", res2.data);
 
-    alert("✅ Sent to HOD");
-    resetModal();
-    fetchDashboardData();
-
-  } catch (err) {
-    alert("❌ Failed");
-    console.error(err);
-  }
-};
+      alert("✅ Sent to HOD");
+      resetModal();
+      fetchDashboardData();
+    } catch (err) {
+      alert("❌ Failed");
+      console.error(err);
+    }
+  };
 
   const handleReject = async () => {
     if (!remark.trim()) {
@@ -132,7 +137,7 @@ console.log("STEP 2 RESPONSE:", res2.data);
 
     try {
       await axios.put(
-        `http://localhost:5000/api/department/update/${selectedApp._id}`,
+        `https://your-dues.onrender.com/api/department/update/${selectedApp._id}`,
         {
           department: "accounts",
           status: "rejected",
@@ -140,7 +145,7 @@ console.log("STEP 2 RESPONSE:", res2.data);
         },
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       alert("✅ Application rejected!");
@@ -169,11 +174,23 @@ console.log("STEP 2 RESPONSE:", res2.data);
   const getStatusBadge = (status) => {
     switch (status) {
       case "approved":
-        return <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">Approved</span>;
+        return (
+          <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">
+            Approved
+          </span>
+        );
       case "rejected":
-        return <span className="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">Rejected</span>;
+        return (
+          <span className="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">
+            Rejected
+          </span>
+        );
       default:
-        return <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded">Pending</span>;
+        return (
+          <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded">
+            Pending
+          </span>
+        );
     }
   };
 
@@ -189,18 +206,19 @@ console.log("STEP 2 RESPONSE:", res2.data);
     <div className="min-h-screen bg-gray-50 flex">
       {/* ============ LEFT SIDEBAR ============ */}
       {/* <div className="w-64 bg-gradient-to-b from-blue-800 to-blue-900 text-white flex flex-col"> */}
-       <div className={`fixed top-0 left-0 h-full w-64 bg-gradient-to-b from-blue-800 to-blue-900 text-white flex flex-col shadow-2xl transform transition-transform duration-300 z-50
-${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}> 
+      <div
+        className={`fixed top-0 left-0 h-full w-64 bg-gradient-to-b from-blue-800 to-blue-900 text-white flex flex-col shadow-2xl transform transition-transform duration-300 z-50
+${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
+      >
         {/* Logo/Header Section */}
         {/* <div className="p-6 border-b border-blue-700"> */}
         <div className="p-6 border-b border-blue-700 relative">
-
-  <button 
-    className="md:hidden absolute top-4 right-4 text-white text-xl"
-    onClick={() => setIsOpen(false)}
-  >
-    ✕
-  </button>
+          <button
+            className="md:hidden absolute top-4 right-4 text-white text-xl"
+            onClick={() => setIsOpen(false)}
+          >
+            ✕
+          </button>
           <div className="flex items-center space-x-3">
             <div>
               <h1 className="text-xl font-bold">Accounts Department</h1>
@@ -225,7 +243,7 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
               <p className="text-xs opacity-75">Overview & Statistics</p>
             </div>
           </button>
-          
+
           <button
             onClick={() => setActiveTab("pending")}
             className={`w-full flex items-center px-4 py-3 rounded-lg transition-all duration-200 ${
@@ -245,7 +263,7 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
               </span>
             )}
           </button>
-          
+
           <button
             onClick={() => setActiveTab("history")}
             className={`w-full flex items-center px-4 py-3 rounded-lg transition-all duration-200 ${
@@ -288,37 +306,32 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
       <div className="flex-1 flex flex-col ml-0 md:ml-64">
         {/* Top Header Bar */}
         <div className="bg-white border-b px-6 py-4 shadow-sm">
-        <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between">
+            {/* LEFT SIDE */}
+            <div>
+              <h2 className="text-xl font-bold text-gray-800">
+                {activeTab === "dashboard" && "Dashboard Overview"}
+                {activeTab === "pending" && "Pending Requests"}
+                {activeTab === "history" && "Application History"}
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">
+                {activeTab === "pending" &&
+                  "Review and process pending requests"}
+                {activeTab === "history" && "View all processed applications"}
+              </p>
+            </div>
 
-  {/* LEFT SIDE */}
-  <div>
-    <h2 className="text-xl font-bold text-gray-800">
-      {activeTab === "dashboard" && "Dashboard Overview"}
-      {activeTab === "pending" && "Pending Requests"}
-      {activeTab === "history" && "Application History"}
-    </h2>
-    <p className="text-sm text-gray-600 mt-1">
-      {activeTab === "pending" && "Review and process pending requests"}
-      {activeTab === "history" && "View all processed applications"}
-    </p>
-  </div>
-
-  {/* RIGHT SIDE */}
-  <div className="flex items-center gap-4">
-
-    {/* ✅ HAMBURGER HERE */}
-    <button 
-      className="md:hidden text-gray-700 text-2xl"
-      onClick={() => setIsOpen(true)}
-    >
-      ☰
-    </button>
-
-     
-
-  </div>
-
-</div>
+            {/* RIGHT SIDE */}
+            <div className="flex items-center gap-4">
+              {/* ✅ HAMBURGER HERE */}
+              <button
+                className="md:hidden text-gray-700 text-2xl"
+                onClick={() => setIsOpen(true)}
+              >
+                ☰
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Content Section */}
@@ -338,8 +351,12 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
                       Pending
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600 mb-1">Pending Fee Requests</p>
-                  <p className="text-3xl font-bold text-gray-800">{stats.pending}</p>
+                  <p className="text-sm text-gray-600 mb-1">
+                    Pending Fee Requests
+                  </p>
+                  <p className="text-3xl font-bold text-gray-800">
+                    {stats.pending}
+                  </p>
                 </div>
 
                 {/* Approved Card */}
@@ -353,7 +370,9 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
                     </span>
                   </div>
                   <p className="text-sm text-gray-600 mb-1">Approved Today</p>
-                  <p className="text-3xl font-bold text-gray-800">{stats.approved}</p>
+                  <p className="text-3xl font-bold text-gray-800">
+                    {stats.approved}
+                  </p>
                 </div>
 
                 {/* Rejected Card */}
@@ -367,13 +386,17 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
                     </span>
                   </div>
                   <p className="text-sm text-gray-600 mb-1">Rejected Today</p>
-                  <p className="text-3xl font-bold text-gray-800">{stats.rejected}</p>
+                  <p className="text-3xl font-bold text-gray-800">
+                    {stats.rejected}
+                  </p>
                 </div>
               </div>
 
               {/* Quick Actions */}
               <div className="bg-white rounded-lg shadow border p-6">
-                <h3 className="text-lg font-bold text-gray-800 mb-4">Quick Actions</h3>
+                <h3 className="text-lg font-bold text-gray-800 mb-4">
+                  Quick Actions
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <button
                     onClick={() => setActiveTab("pending")}
@@ -384,12 +407,16 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
                         <Clock className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <p className="font-medium text-gray-800">Review Pending Requests</p>
-                        <p className="text-sm text-gray-600">{stats.pending} requests waiting</p>
+                        <p className="font-medium text-gray-800">
+                          Review Pending Requests
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {stats.pending} requests waiting
+                        </p>
                       </div>
                     </div>
                   </button>
-                  
+
                   <button
                     onClick={() => setActiveTab("history")}
                     className="p-4 bg-gray-50 border border-gray-100 rounded-lg hover:bg-gray-100 transition-colors text-left"
@@ -399,8 +426,12 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
                         <LayoutDashboard className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <p className="font-medium text-gray-800">View Application History</p>
-                        <p className="text-sm text-gray-600">All processed applications</p>
+                        <p className="font-medium text-gray-800">
+                          View Application History
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          All processed applications
+                        </p>
                       </div>
                     </div>
                   </button>
@@ -409,11 +440,17 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
 
               {/* System Status */}
               <div className="bg-white rounded-lg shadow border p-6">
-                <h3 className="text-lg font-bold text-gray-800 mb-4">System Status</h3>
+                <h3 className="text-lg font-bold text-gray-800 mb-4">
+                  System Status
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <span className="text-sm font-medium text-gray-700">Total Today</span>
-                    <span className="font-bold text-blue-600">{stats.pending + stats.approved + stats.rejected}</span>
+                    <span className="text-sm font-medium text-gray-700">
+                      Total Today
+                    </span>
+                    <span className="font-bold text-blue-600">
+                      {stats.pending + stats.approved + stats.rejected}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -427,7 +464,9 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
               <div className="px-6 py-4 border-b bg-gray-50">
                 <div className="flex justify-between items-center">
                   <div>
-                    <h3 className="text-lg font-bold text-gray-800">Pending Requests</h3>
+                    <h3 className="text-lg font-bold text-gray-800">
+                      Pending Requests
+                    </h3>
                   </div>
                   <div className="flex items-center space-x-2">
                     <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
@@ -454,37 +493,66 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
                 ) : applications.length === 0 ? (
                   <div className="p-16 text-center">
                     <div className="flex justify-center mb-6">
-  <CheckCircle2 className="w-16 h-16 text-green-600" />
-</div>
+                      <CheckCircle2 className="w-16 h-16 text-green-600" />
+                    </div>
 
-                    <h3 className="text-2xl font-bold text-gray-800 mb-2">All Clear!</h3>
-                    <p className="text-gray-600 mb-4">No pending requests at the moment</p>
-                    <p className="text-sm text-gray-500">New requests will appear here automatically</p>
+                    <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                      All Clear!
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      No pending requests at the moment
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      New requests will appear here automatically
+                    </p>
                   </div>
                 ) : (
                   <table className="w-full">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">#</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Roll Number</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Student Name</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Branch</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Semester</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Applied Date</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Action</th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                          #
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                          Roll Number
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                          Student Name
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                          Branch
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                          Semester
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                          Applied Date
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                          Action
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
                       {applications.map((app, idx) => (
-                        <tr key={app._id} className="hover:bg-blue-50 transition-colors">
+                        <tr
+                          key={app._id}
+                          className="hover:bg-blue-50 transition-colors"
+                        >
                           <td className="px-6 py-4">
-                            <div className="text-sm text-gray-900 font-medium">{idx + 1}</div>
+                            <div className="text-sm text-gray-900 font-medium">
+                              {idx + 1}
+                            </div>
                           </td>
                           <td className="px-6 py-4">
-                            <div className="font-mono text-sm font-semibold text-blue-600">{app.rollNumber}</div>
+                            <div className="font-mono text-sm font-semibold text-blue-600">
+                              {app.rollNumber}
+                            </div>
                           </td>
                           <td className="px-6 py-4">
-                            <div className="text-sm font-medium text-gray-900">{app.name}</div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {app.name}
+                            </div>
                           </td>
                           <td className="px-6 py-4">
                             <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
@@ -492,11 +560,15 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
                             </span>
                           </td>
                           <td className="px-6 py-4">
-                            <div className="text-sm text-gray-900">{app.semester || "N/A"}</div>
+                            <div className="text-sm text-gray-900">
+                              {app.semester || "N/A"}
+                            </div>
                           </td>
                           <td className="px-6 py-4">
                             <div className="text-sm text-gray-900">
-                              {new Date(app.createdAt || Date.now()).toLocaleDateString('en-IN')}
+                              {new Date(
+                                app.createdAt || Date.now(),
+                              ).toLocaleDateString("en-IN")}
                             </div>
                           </td>
                           <td className="px-6 py-4">
@@ -523,8 +595,12 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
               <div className="px-6 py-4 border-b bg-gray-50">
                 <div className="flex justify-between items-center">
                   <div>
-                    <h3 className="text-lg font-bold text-gray-800">Application History</h3>
-                    <p className="text-sm text-gray-600">All processed applications</p>
+                    <h3 className="text-lg font-bold text-gray-800">
+                      Application History
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      All processed applications
+                    </p>
                   </div>
                   <button
                     onClick={fetchHistory}
@@ -546,58 +622,90 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
                 ) : history.length === 0 ? (
                   <div className="p-16 text-center">
                     <div className="text-6xl mb-6 text-gray-400">📋</div>
-                    <h3 className="text-2xl font-bold text-gray-800 mb-2">No History Found</h3>
-                    <p className="text-gray-600">No applications have been processed yet</p>
+                    <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                      No History Found
+                    </h3>
+                    <p className="text-gray-600">
+                      No applications have been processed yet
+                    </p>
                   </div>
                 ) : (
                   <table className="w-full">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Roll Number</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Name</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Branch</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Semester</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Status</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Processed Date</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Remark</th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                          Roll Number
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                          Name
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                          Branch
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                          Semester
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                          Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                          Processed Date
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                          Remark
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {Array.isArray(history) && history.map((app) => (
-                        <tr key={app._id} className="hover:bg-gray-50 transition-colors">
-                          <td className="px-6 py-4">
-                            <div className="font-mono text-sm font-semibold text-gray-900">{app.rollNumber}</div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="text-sm font-medium text-gray-900">{app.name}</div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                              {app.branch}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4">
-  <div className="text-sm text-gray-900">
-    {app.semester || "N/A"}
-  </div>
-</td>
-                          <td className="px-6 py-4">
-                            {getStatusBadge(
-                              app.departments.find((d) => d.name === "accounts")?.status
-                            )}
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="text-sm text-gray-900">
-                              {new Date(app.updatedAt || Date.now()).toLocaleDateString('en-IN')}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="text-sm text-gray-900 max-w-xs truncate">
-                              {app.departments.find((d) => d.name === "accounts")?.remark || "No remarks"}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                      {Array.isArray(history) &&
+                        history.map((app) => (
+                          <tr
+                            key={app._id}
+                            className="hover:bg-gray-50 transition-colors"
+                          >
+                            <td className="px-6 py-4">
+                              <div className="font-mono text-sm font-semibold text-gray-900">
+                                {app.rollNumber}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="text-sm font-medium text-gray-900">
+                                {app.name}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                                {app.branch}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="text-sm text-gray-900">
+                                {app.semester || "N/A"}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              {getStatusBadge(
+                                app.departments.find(
+                                  (d) => d.name === "accounts",
+                                )?.status,
+                              )}
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="text-sm text-gray-900">
+                                {new Date(
+                                  app.updatedAt || Date.now(),
+                                ).toLocaleDateString("en-IN")}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="text-sm text-gray-900 max-w-xs truncate">
+                                {app.departments.find(
+                                  (d) => d.name === "accounts",
+                                )?.remark || "No remarks"}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
                     </tbody>
                   </table>
                 )}
@@ -615,8 +723,12 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4">
               <div className="flex justify-between items-center">
                 <div>
-                  <h3 className="text-xl font-bold">Verify Accounts Clearance</h3>
-                  <p className="text-sm text-blue-100 mt-1">Accounts Department Verification</p>
+                  <h3 className="text-xl font-bold">
+                    Verify Accounts Clearance
+                  </h3>
+                  <p className="text-sm text-blue-100 mt-1">
+                    Accounts Department Verification
+                  </p>
                 </div>
                 <button
                   onClick={resetModal}
@@ -631,32 +743,42 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
             <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
               {/* Student Information */}
               <div className="mb-6">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3">Student Details</h4>
+                <h4 className="text-sm font-semibold text-gray-700 mb-3">
+                  Student Details
+                </h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="border border-gray-200 rounded p-3">
                     <p className="text-xs text-gray-600 mb-1">Name</p>
-                    <p className="font-semibold text-gray-800">{selectedApp.name}</p>
+                    <p className="font-semibold text-gray-800">
+                      {selectedApp.name}
+                    </p>
                   </div>
                   <div className="border border-gray-200 rounded p-3">
                     <p className="text-xs text-gray-600 mb-1">Roll Number</p>
-                    <p className="font-mono font-semibold text-blue-600">{selectedApp.rollNumber}</p>
+                    <p className="font-mono font-semibold text-blue-600">
+                      {selectedApp.rollNumber}
+                    </p>
                   </div>
                   <div className="border border-gray-200 rounded p-3">
                     <p className="text-xs text-gray-600 mb-1">Branch</p>
-                    <p className="font-semibold text-gray-800">{selectedApp.branch}</p>
+                    <p className="font-semibold text-gray-800">
+                      {selectedApp.branch}
+                    </p>
                   </div>
                   <div className="border border-gray-200 rounded p-3">
                     <p className="text-xs text-gray-600 mb-1">Semester</p>
-                    <p className="font-semibold text-gray-800">{selectedApp.semester || "N/A"}</p>
+                    <p className="font-semibold text-gray-800">
+                      {selectedApp.semester || "N/A"}
+                    </p>
                   </div>
                 </div>
               </div>
 
-              
-
               {/* Accounts Clearance Checklist */}
               <div className="mb-6">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3">Clearance Checklist</h4>
+                <h4 className="text-sm font-semibold text-gray-700 mb-3">
+                  Clearance Checklist
+                </h4>
                 <div className="space-y-3 bg-blue-50 border border-blue-100 rounded p-4">
                   <label className="flex items-center gap-3 cursor-pointer">
                     <input
@@ -665,7 +787,9 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
                       onChange={(e) => setAllFeesPaid(e.target.checked)}
                       className="w-5 h-5 text-blue-600 rounded border-gray-300"
                     />
-                    <span className="text-sm font-medium text-gray-800">All semester fees paid</span>
+                    <span className="text-sm font-medium text-gray-800">
+                      All semester fees paid
+                    </span>
                   </label>
                   <label className="flex items-center gap-3 cursor-pointer">
                     <input
@@ -674,7 +798,9 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
                       onChange={(e) => setNoFinePending(e.target.checked)}
                       className="w-5 h-5 text-blue-600 rounded border-gray-300"
                     />
-                    <span className="text-sm font-medium text-gray-800">No fine pending</span>
+                    <span className="text-sm font-medium text-gray-800">
+                      No fine pending
+                    </span>
                   </label>
                 </div>
               </div>
@@ -690,7 +816,9 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
                   placeholder="Enter your remark here..."
                   className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[100px]"
                 />
-                <p className="text-xs text-gray-500 mt-1">This remark will be visible to the student</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  This remark will be visible to the student
+                </p>
               </div>
 
               {/* Action Buttons */}
@@ -699,13 +827,13 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
                   onClick={handleApprove}
                   className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded font-semibold transition-colors"
                 >
-                   Approve
+                  Approve
                 </button>
                 <button
                   onClick={handleReject}
                   className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded font-semibold transition-colors"
                 >
-                   Reject
+                  Reject
                 </button>
                 <button
                   onClick={resetModal}
@@ -719,11 +847,11 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
         </div>
       )}
       {isOpen && (
-  <div 
-    className="fixed inset-0 bg-black bg-opacity-40 z-40 md:hidden"
-    onClick={() => setIsOpen(false)}
-  ></div>
-)}
+        <div
+          className="fixed inset-0 bg-black bg-opacity-40 z-40 md:hidden"
+          onClick={() => setIsOpen(false)}
+        ></div>
+      )}
     </div>
   );
 }

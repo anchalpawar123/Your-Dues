@@ -17,7 +17,7 @@ import {
 
 export default function ScholarshipDashboard() {
   const [isOpen, setIsOpen] = useState(false);
-   const token = localStorage.getItem("token"); 
+  const token = localStorage.getItem("token");
   const [applications, setApplications] = useState([]);
   const [selectedApp, setSelectedApp] = useState(null);
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -39,7 +39,7 @@ export default function ScholarshipDashboard() {
 
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/department/scholarship",
+        "https://your-dues.onrender.com/api/department/scholarship",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -66,7 +66,7 @@ export default function ScholarshipDashboard() {
 
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/department/scholarship/history",
+        "https://your-dues.onrender.com/api/department/scholarship/history",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -107,7 +107,7 @@ export default function ScholarshipDashboard() {
     }
 
     await axios.put(
-      `http://localhost:5000/api/department/update/${selectedApp._id}`,
+      `https://your-dues.onrender.com/api/department/update/${selectedApp._id}`,
       {
         department: "scholarship",
         status: "approved",
@@ -119,7 +119,7 @@ export default function ScholarshipDashboard() {
         },
       },
     );
-alert("Application approved successfully!");
+    alert("Application approved successfully!");
     resetModal();
 
     fetchDashboardData();
@@ -132,7 +132,7 @@ alert("Application approved successfully!");
     }
 
     await axios.put(
-      `http://localhost:5000/api/department/update/${selectedApp._id}`,
+      `https://your-dues.onrender.com/api/department/update/${selectedApp._id}`,
       {
         department: "scholarship",
         status: "rejected",
@@ -144,7 +144,7 @@ alert("Application approved successfully!");
         },
       },
     );
-alert(" Application rejected!");
+    alert(" Application rejected!");
     resetModal();
 
     fetchDashboardData();
@@ -193,15 +193,19 @@ alert(" Application rejected!");
   return (
     <div className="min-h-screen bg-gray-50 flex font-sans">
       {/* ════════════════════ SIDEBAR ════════════════════ */}
-       <div className={`fixed top-0 left-0 h-full w-64 bg-gradient-to-b from-blue-800 to-blue-900 text-white flex flex-col shadow-2xl transform transition-transform duration-300 z-50
-${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>  {/* Logo */}
+      <div
+        className={`fixed top-0 left-0 h-full w-64 bg-gradient-to-b from-blue-800 to-blue-900 text-white flex flex-col shadow-2xl transform transition-transform duration-300 z-50
+${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
+      >
+        {" "}
+        {/* Logo */}
         <div className="p-6 border-b border-emerald-700 relative">
-          <button 
-  className="md:hidden absolute top-4 right-4 text-white text-xl"
-  onClick={() => setIsOpen(false)}
->
-  ✕
-</button>
+          <button
+            className="md:hidden absolute top-4 right-4 text-white text-xl"
+            onClick={() => setIsOpen(false)}
+          >
+            ✕
+          </button>
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10  bg-blue-600 rounded-lg flex items-center justify-center shadow-inner">
               <GraduationCap className="w-6 h-6 text-white" />
@@ -216,7 +220,6 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>  {/* Logo 
             </div>
           </div>
         </div>
-
         {/* Nav */}
         <nav className="flex-1 p-4 space-y-1">
           {[
@@ -262,7 +265,6 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>  {/* Logo 
             </button>
           ))}
         </nav>
-
         {/* User + Logout */}
         <div className="p-4 border-t border-emerald-700">
           <div className="flex items-center mb-4 px-2">
@@ -302,15 +304,13 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>  {/* Logo 
                 {activeTab === "dashboard" &&
                   "Monitor scholarship clearance applications"}
               </p>
-           
             </div>
-            <button 
-  className="md:hidden text-2xl"
-  onClick={() => setIsOpen(true)}
->
-  ☰
-</button>
-             
+            <button
+              className="md:hidden text-2xl"
+              onClick={() => setIsOpen(true)}
+            >
+              ☰
+            </button>
           </div>
         </div>
 
@@ -643,14 +643,14 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>  {/* Logo 
                             </span>
                           </td>
                           <td className="px-6 py-4">
-  <div className="text-sm text-gray-700">
-    {app.semester || "N/A"}
-  </div>
-</td>
+                            <div className="text-sm text-gray-700">
+                              {app.semester || "N/A"}
+                            </div>
+                          </td>
                           <td className="px-6 py-4">
                             {getStatusBadge(
                               app.departments?.find(
-                               (d) => d.name?.toLowerCase() === "scholarship",
+                                (d) => d.name?.toLowerCase() === "scholarship",
                               )?.status,
                             )}
                           </td>
@@ -661,7 +661,9 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>  {/* Logo 
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-700 max-w-xs truncate">
                             {/* {app.remark || "No remarks"} */}
-                            {app.departments?.find(d => d.name === "scholarship")?.remark || "No remarks"}
+                            {app.departments?.find(
+                              (d) => d.name === "scholarship",
+                            )?.remark || "No remarks"}
                           </td>
                         </tr>
                       ))}
@@ -806,13 +808,13 @@ ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>  {/* Logo 
                   onClick={handleApprove}
                   className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-semibold transition-colors shadow-sm"
                 >
-                   Approve
+                  Approve
                 </button>
                 <button
                   onClick={handleReject}
                   className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg font-semibold transition-colors shadow-sm"
                 >
-                   Reject
+                  Reject
                 </button>
                 <button
                   onClick={resetModal}

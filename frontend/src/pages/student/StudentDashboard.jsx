@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import StudentProfile from "./StudentProfile";
- 
+
 import axios from "axios";
 const token = localStorage.getItem("token");
 
@@ -9,40 +9,40 @@ export default function StudentDashboard() {
   const [notifications, setNotifications] = useState([]);
   const [activePage, setActivePage] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-   const [profilePic, setProfilePic] = useState("");
+  const [profilePic, setProfilePic] = useState("");
   const navigate = useNavigate();
   const handleLogout = () => {
     localStorage.clear();
     navigate("/login");
   };
- 
-  useEffect(() => {
-  axios
-    .get("http://localhost:5000/api/student/profile", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    })
-     .then((res) => {
-  setProfilePic(res.data.profilePic);
 
-  // ✅ ADD THIS
-  localStorage.setItem("studentEmail", res.data.email);
-});
-}, []);
+  useEffect(() => {
+    axios
+      .get("https://your-dues.onrender.com/api/student/profile", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+      .then((res) => {
+        setProfilePic(res.data.profilePic);
+
+        // ✅ ADD THIS
+        localStorage.setItem("studentEmail", res.data.email);
+      });
+  }, []);
   return (
     <div className=" h-screen overflow-hidden flex flex-col md:flex-row bg-gray-50">
       {/* ================= SIDEBAR ================= */}
-       <aside 
-className={`fixed md:static top-0 left-0 h-screen w-64 flex flex-col justify-between bg-gradient-to-b from-blue-600 to-blue-700 text-white shadow-xl transform transition-transform duration-300 z-[60]
+      <aside
+        className={`fixed md:static top-0 left-0 h-screen w-64 flex flex-col justify-between bg-gradient-to-b from-blue-600 to-blue-700 text-white shadow-xl transform transition-transform duration-300 z-[60]
 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
->
-<button
-    onClick={() => setSidebarOpen(false)}
-    className="md:hidden absolute top-4 right-4 text-white text-xl"
-  >
-    ✕
-  </button>
+      >
+        <button
+          onClick={() => setSidebarOpen(false)}
+          className="md:hidden absolute top-4 right-4 text-white text-xl"
+        >
+          ✕
+        </button>
         <div className="p-6 border-b border-blue-500">
           <h2 className="text-xl font-bold">Student Portal</h2>
           <p className="text-blue-200 text-sm mt-1">No Dues System</p>
@@ -50,77 +50,70 @@ ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
 
         <div className="p-4 border-b border-blue-500 flex flex-col items-center">
           {/* PROFILE IMAGE */}
-          
- <label className="relative cursor-pointer">
 
-  <img
-    src={profilePic || ""}
-    className="w-20 h-20 rounded-full object-cover border bg-white"
-  />
+          <label className="relative cursor-pointer">
+            <img
+              src={profilePic || ""}
+              className="w-20 h-20 rounded-full object-cover border bg-white"
+            />
 
-  {!profilePic && (
-    <div className="absolute inset-0 flex items-center justify-center text-sm text-gray-500">
-      Add Image
-    </div>
-  )}
+            {!profilePic && (
+              <div className="absolute inset-0 flex items-center justify-center text-sm text-gray-500">
+                Add Image
+              </div>
+            )}
 
-  <input
-    type="file"
-    accept="image/*"
-    className="hidden"
-    onChange={(e) => {
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (!file) return;
 
-      const file = e.target.files[0];
-      if (!file) return;
+                const reader = new FileReader();
 
-      const reader = new FileReader();
+                reader.onload = async () => {
+                  await axios.put(
+                    "https://your-dues.onrender.com/api/student/profile-pic",
+                    { image: reader.result },
+                    {
+                      headers: {
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                      },
+                    },
+                  );
 
-      reader.onload = async () => {
+                  setProfilePic(reader.result);
+                };
 
-        await axios.put(
-          "http://localhost:5000/api/student/profile-pic",
-          { image: reader.result },
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-
-        setProfilePic(reader.result);
-
-      };
-
-      reader.readAsDataURL(file);
-
-    }}
-  />
-
-</label>
+                reader.readAsDataURL(file);
+              }}
+            />
+          </label>
           {/* REMOVE IMAGE BUTTON (sirf tab dikhe jab image ho) */}
           {/* {localStorage.getItem("profilePic") && ( */}
           {profilePic && (
-             
             <button
-  onClick={async () => {
-    await axios.put(
-      "http://localhost:5000/api/student/profile-pic",
-      { image: "" },
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
+              onClick={async () => {
+                await axios.put(
+                  "https://your-dues.onrender.com/api/student/profile-pic",
+                  { image: "" },
+                  {
+                    headers: {
+                      Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    },
+                  },
+                );
 
-    setProfilePic("");
-  }}
-  //  className="mt-2 text-xs text-gray-200 hover:underline"
-  // className="mt-2 text-xs text-yellow-300 hover:underline"
-  className="mt-2 text-xs text-gray-200 hover:text-white hover:underline"
->
-  Remove Image
-</button>
+                setProfilePic("");
+              }}
+              //  className="mt-2 text-xs text-gray-200 hover:underline"
+              // className="mt-2 text-xs text-yellow-300 hover:underline"
+              className="mt-2 text-xs text-gray-200 hover:text-white hover:underline"
+            >
+              Remove Image
+            </button>
           )}
 
           {/* NAME + ROLL */}
@@ -133,75 +126,73 @@ ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
         </div>
 
         {/* <nav className="p-4"> */}
-         <div className="flex-1">
-  <nav className="p-4">
-          <ul className="space-y-1">
-            <SidebarItem
-              label="Dashboard"
-              active={activePage === "dashboard"}
-              onClick={() => setActivePage("dashboard")}
-            />
-            <SidebarItem
-              label="Apply No Dues"
-              active={activePage === "apply"}
-              onClick={() => setActivePage("apply")}
-            />
-            <SidebarItem
-              label="View Status"
-              active={activePage === "view"}
-              onClick={() => setActivePage("view")}
-            />
-            <SidebarItem
-              label="Track Progress"
-              active={activePage === "track"}
-              onClick={() => setActivePage("track")}
-            />
-            <SidebarItem
-              label="Download Certificate"
-              active={activePage === "download"}
-              onClick={() => setActivePage("download")}
-            />
-            <SidebarItem
-              label="Profile"
-              active={activePage === "profile"}
-              onClick={() => setActivePage("profile")}
-            />
-          </ul>
+        <div className="flex-1">
+          <nav className="p-4">
+            <ul className="space-y-1">
+              <SidebarItem
+                label="Dashboard"
+                active={activePage === "dashboard"}
+                onClick={() => setActivePage("dashboard")}
+              />
+              <SidebarItem
+                label="Apply No Dues"
+                active={activePage === "apply"}
+                onClick={() => setActivePage("apply")}
+              />
+              <SidebarItem
+                label="View Status"
+                active={activePage === "view"}
+                onClick={() => setActivePage("view")}
+              />
+              <SidebarItem
+                label="Track Progress"
+                active={activePage === "track"}
+                onClick={() => setActivePage("track")}
+              />
+              <SidebarItem
+                label="Download Certificate"
+                active={activePage === "download"}
+                onClick={() => setActivePage("download")}
+              />
+              <SidebarItem
+                label="Profile"
+                active={activePage === "profile"}
+                onClick={() => setActivePage("profile")}
+              />
+            </ul>
 
-          <div className="mt-8 pt-4 border-t border-blue-500">
-            <button
-              onClick={handleLogout}
-              className="w-full px-4 py-2.5 rounded-lg bg-red-500 hover:bg-red-600 transition-colors font-medium"
-            >
-              Logout
-            </button>
-          </div>
-        </nav>
+            <div className="mt-8 pt-4 border-t border-blue-500">
+              <button
+                onClick={handleLogout}
+                className="w-full px-4 py-2.5 rounded-lg bg-red-500 hover:bg-red-600 transition-colors font-medium"
+              >
+                Logout
+              </button>
+            </div>
+          </nav>
         </div>
       </aside>
       {sidebarOpen && (
-  <div
-    onClick={() => setSidebarOpen(false)}
-    className="fixed inset-0 bg-black bg-opacity-40 z-50 md:hidden"
-  />
-)}
+        <div
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 bg-black bg-opacity-40 z-50 md:hidden"
+        />
+      )}
 
       {/* ================= MAIN CONTENT ================= */}
-       <div className="md:hidden fixed top-0 left-0 right-0 bg-white shadow z-40 flex items-center justify-between px-4 py-3">
+      <div className="md:hidden fixed top-0 left-0 right-0 bg-white shadow z-40 flex items-center justify-between px-4 py-3">
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
+          Student Dashboard
+        </h2>
 
-    <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
-  Student Dashboard
-</h2>
-
-  <button
-    onClick={() => setSidebarOpen(true)}
-    className="text-2xl text-gray-700"
-  >
-    ☰
-  </button>
-
-</div>
-       <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto mt-14 md:mt-0">
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="text-2xl text-gray-700"
+        >
+          ☰
+        </button>
+      </div>
+      <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto mt-14 md:mt-0">
         {activePage === "dashboard" && <DashboardHome />}
         {activePage === "apply" && <ApplyNoDues />}
         {activePage === "view" && <ViewStatus />}
@@ -238,14 +229,14 @@ function DashboardHome() {
     if (!rollNumber) return;
 
     axios
-      .get(`http://localhost:5000/api/student/check/${rollNumber}`)
+      .get(`https://your-dues.onrender.com/api/student/check/${rollNumber}`)
       .then((res) => {
         if (!res.data.applied) {
           setStatusData({});
           return;
         }
         return axios.get(
-          `http://localhost:5000/api/student/status/${rollNumber}`,
+          `https://your-dues.onrender.com/api/student/status/${rollNumber}`,
         );
       })
       .then((res) => {
@@ -257,26 +248,24 @@ function DashboardHome() {
         });
         // ✅ ADD THIS BELOW
 
-// Accounts status
-// statusObj.accounts =
-//   res.data.finalStatus === "accounts_pending" ||
-//   res.data.finalStatus === "hod_pending" ||
-//   res.data.finalStatus === "approved"
-//     ? "approved"
-//     : "pending";
-const accDept = res.data.departments.find(
-  (d) => d.name === "accounts"
-);
+        // Accounts status
+        // statusObj.accounts =
+        //   res.data.finalStatus === "accounts_pending" ||
+        //   res.data.finalStatus === "hod_pending" ||
+        //   res.data.finalStatus === "approved"
+        //     ? "approved"
+        //     : "pending";
+        const accDept = res.data.departments.find((d) => d.name === "accounts");
 
-statusObj.accounts = accDept?.status || "pending";
+        statusObj.accounts = accDept?.status || "pending";
 
-// HOD status
-statusObj.hod =
-  res.data.hodStatus === "approved"
-    ? "approved"
-    : res.data.hodStatus === "rejected"
-    ? "rejected"
-    : "pending";
+        // HOD status
+        statusObj.hod =
+          res.data.hodStatus === "approved"
+            ? "approved"
+            : res.data.hodStatus === "rejected"
+              ? "rejected"
+              : "pending";
         setStatusData(statusObj);
       })
       .catch(() => {
@@ -287,7 +276,7 @@ statusObj.hod =
   // 🔔 NOTIFICATIONS
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/student/notifications", {
+      .get("https://your-dues.onrender.com/api/student/notifications", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -312,38 +301,36 @@ statusObj.hod =
 
       <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
 
-       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {ALL_DEPARTMENTS.map((dept) => {
-  // const status = statusData[dept]?.status || "pending";
+          // const status = statusData[dept]?.status || "pending";
 
-  const raw = statusData[dept];
+          const raw = statusData[dept];
 
-const status =
-  typeof raw === "string"
-    ? raw
-    : raw?.status || "pending";
+          const status =
+            typeof raw === "string" ? raw : raw?.status || "pending";
 
-  return (
-    <StatusCard
-      key={dept}
-      title={dept.toUpperCase()}
-      status={
-        status === "approved"
-          ? "Cleared"
-          : status === "rejected"
-          ? "Rejected"
-          : "Pending"
-      }
-      color={
-        status === "approved"
-          ? "green"
-          : status === "rejected"
-          ? "red"
-          : "yellow"
-      }
-    />
-  );
-})}
+          return (
+            <StatusCard
+              key={dept}
+              title={dept.toUpperCase()}
+              status={
+                status === "approved"
+                  ? "Cleared"
+                  : status === "rejected"
+                    ? "Rejected"
+                    : "Pending"
+              }
+              color={
+                status === "approved"
+                  ? "green"
+                  : status === "rejected"
+                    ? "red"
+                    : "yellow"
+              }
+            />
+          );
+        })}
       </div>
     </div>
   );
@@ -398,23 +385,23 @@ function ApplyNoDues() {
     graduationType: "",
     isHosteller: "",
     isSportsMember: "",
-     isScholarshipHolder: "",
+    isScholarshipHolder: "",
   });
 
-   useEffect(() => {
-  setFormData((prev) => ({
-    ...prev,
-    rollNumber: rollNumber || "",
-    name: localStorage.getItem("studentName") || "",
-    email: localStorage.getItem("studentEmail") || "", // ✅ ADD THIS
-  }));
-}, [rollNumber]);
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      rollNumber: rollNumber || "",
+      name: localStorage.getItem("studentName") || "",
+      email: localStorage.getItem("studentEmail") || "", // ✅ ADD THIS
+    }));
+  }, [rollNumber]);
 
   useEffect(() => {
     if (!rollNumber) return;
 
     axios
-      .get(`http://localhost:5000/api/student/check/${rollNumber}`)
+      .get(`https://your-dues.onrender.com/api/student/check/${rollNumber}`)
       .then((res) => {
         setAlreadyApplied(res.data.applied === true);
       })
@@ -435,34 +422,34 @@ function ApplyNoDues() {
   // };
   const handleSubmit = async () => {
     // ✅ VALIDATION
-if (
-  !formData.name ||
-  !formData.email ||
-  !formData.phone ||
-  !formData.branch ||
-  !formData.semester ||
-  !formData.reason ||
-  !formData.graduationType ||
-  formData.isHosteller === "" ||
-  formData.isSportsMember === "" ||
-  formData.isScholarshipHolder === ""
-) {
-  alert("⚠️ Please fill all fields");
-  return;
-}
+    if (
+      !formData.name ||
+      !formData.email ||
+      !formData.phone ||
+      !formData.branch ||
+      !formData.semester ||
+      !formData.reason ||
+      !formData.graduationType ||
+      formData.isHosteller === "" ||
+      formData.isSportsMember === "" ||
+      formData.isScholarshipHolder === ""
+    ) {
+      alert("⚠️ Please fill all fields");
+      return;
+    }
 
-// ✅ EMAIL CHECK
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-if (!emailRegex.test(formData.email)) {
-  alert("⚠️ Invalid email");
-  return;
-}
+    // ✅ EMAIL CHECK
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      alert("⚠️ Invalid email");
+      return;
+    }
 
-// ✅ PHONE CHECK
-if (formData.phone.length < 10) {
-  alert("⚠️ Invalid phone number");
-  return;
-}
+    // ✅ PHONE CHECK
+    if (formData.phone.length < 10) {
+      alert("⚠️ Invalid phone number");
+      return;
+    }
     try {
       const payload = {
         // rollNumber: formData.rollNumber.trim(),
@@ -473,16 +460,16 @@ if (formData.phone.length < 10) {
         phone: formData.phone,
         reason: formData.reason,
         graduationType: formData.graduationType,
-         
+
         isHosteller: formData.isHosteller === "true",
-  isSportsMember: formData.isSportsMember === "true",
-  isScholarshipHolder: formData.isScholarshipHolder === "true",
+        isSportsMember: formData.isSportsMember === "true",
+        isScholarshipHolder: formData.isScholarshipHolder === "true",
       };
 
       console.log("ROLL =>", payload.rollNumber); // ✅ YAHAN
 
       const res = await axios.post(
-        "http://localhost:5000/api/student/apply",
+        "https://your-dues.onrender.com/api/student/apply",
         payload,
         {
           headers: {
@@ -510,7 +497,7 @@ if (formData.phone.length < 10) {
       reason: "",
       graduationType: "",
       isHosteller: "",
-       isScholarshipHolder: "",
+      isScholarshipHolder: "",
     });
   };
 
@@ -543,14 +530,13 @@ if (formData.phone.length < 10) {
       ) : (
         /* ===== FORM VIEW ===== */
         <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 md:p-8">
-           
-            <form
-  onSubmit={(e) => {
-    e.preventDefault();
-    handleSubmit();
-  }}
-  className="space-y-8"
-> 
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmit();
+            }}
+            className="space-y-8"
+          >
             {/* ================= PERSONAL INFORMATION ================= */}
             <div>
               <h2 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">
@@ -619,28 +605,32 @@ if (formData.phone.length < 10) {
                   <option value="CE">Civil Engineering</option>
                   <option value="EE">Electrical Engineering</option>
                   <option value="IT">Information Technology</option>
-  <option value="AIDS">Artificial Intelligence & Data Science</option>
-  <option value="CSIT">Computer Science & Information Technology</option>
+                  <option value="AIDS">
+                    Artificial Intelligence & Data Science
+                  </option>
+                  <option value="CSIT">
+                    Computer Science & Information Technology
+                  </option>
                 </SelectField>
 
-                 <SelectField
-  label="Current Semester"
-  name="semester"
-  value={formData.semester}
-  onChange={handleChange}
-  required
->
-  <option value="">Select Semester</option>
+                <SelectField
+                  label="Current Semester"
+                  name="semester"
+                  value={formData.semester}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select Semester</option>
 
-  <option value="1">1st Semester</option>
-  <option value="2">2nd Semester</option>
-  <option value="3">3rd Semester</option>
-  <option value="4">4th Semester</option>
-  <option value="5">5th Semester</option>
-  <option value="6">6th Semester</option>
-  <option value="7">7th Semester</option>
-  <option value="8">8th Semester</option>
-</SelectField>
+                  <option value="1">1st Semester</option>
+                  <option value="2">2nd Semester</option>
+                  <option value="3">3rd Semester</option>
+                  <option value="4">4th Semester</option>
+                  <option value="5">5th Semester</option>
+                  <option value="6">6th Semester</option>
+                  <option value="7">7th Semester</option>
+                  <option value="8">8th Semester</option>
+                </SelectField>
               </div>
             </div>
 
@@ -659,17 +649,14 @@ if (formData.phone.length < 10) {
                   required
                 >
                   <option value="">Select Type</option>
- 
 
-<option value="final">Final Year Graduation</option>
+                  <option value="final">Final Year Graduation</option>
 
-<option value="dropout">Dropout (Leaving in Between)</option>
+                  <option value="dropout">Dropout (Leaving in Between)</option>
 
-<option value="transfer">Transfer  </option>
+                  <option value="transfer">Transfer </option>
 
- 
-
-{/* <option value="internship_exit">Leaving for Internship/Job</option> */}
+                  {/* <option value="internship_exit">Leaving for Internship/Job</option> */}
                 </SelectField>
                 <SelectField
                   label="Are you a hostel resident?"
@@ -695,16 +682,16 @@ if (formData.phone.length < 10) {
                 </SelectField>
 
                 <SelectField
-  label="Are you a scholarship student?"
-  name="isScholarshipHolder"
-  value={formData.isScholarshipHolder}
-  onChange={handleChange}
-  required
->
-  <option value="">Select</option>
-  <option value="true">Yes (Scholarship Student)</option>
-  <option value="false">No</option>
-</SelectField>
+                  label="Are you a scholarship student?"
+                  name="isScholarshipHolder"
+                  value={formData.isScholarshipHolder}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select</option>
+                  <option value="true">Yes (Scholarship Student)</option>
+                  <option value="false">No</option>
+                </SelectField>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -741,14 +728,13 @@ if (formData.phone.length < 10) {
               >
                 Reset
               </button>
-             <button
-  type="submit"
-  className="px-8 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
->
-  Submit Application
-</button>
+              <button
+                type="submit"
+                className="px-8 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
+              >
+                Submit Application
+              </button>
             </div>
-             
           </form>
         </div>
       )}
@@ -803,14 +789,14 @@ function SelectField({ label, name, value, onChange, required, children }) {
 }
 
 /* ================= VIEW STATUS ================= */
- const ALL_DEPARTMENTS = [
+const ALL_DEPARTMENTS = [
   "library",
   "hostel",
   "tp",
   "sports",
   "scholarship",
-  "accounts",   // ✅ last before HOD
-  "hod"         // ✅ final
+  "accounts", // ✅ last before HOD
+  "hod", // ✅ final
 ];
 
 function ViewStatus() {
@@ -823,7 +809,7 @@ function ViewStatus() {
     if (!rollNumber) return;
 
     axios
-      .get(`http://localhost:5000/api/student/check/${rollNumber}`)
+      .get(`https://your-dues.onrender.com/api/student/check/${rollNumber}`)
       .then((res) => {
         if (!res.data.applied) {
           setStatusData({});
@@ -831,35 +817,34 @@ function ViewStatus() {
         }
 
         return axios.get(
-          `http://localhost:5000/api/student/status/${rollNumber}`,
+          `https://your-dues.onrender.com/api/student/status/${rollNumber}`,
         );
       })
       .then((res) => {
-        
         if (!res) return;
 
         const statusObj = {};
 
         // departments status
-         res.data.departments.forEach((d) => {
-  statusObj[d.name] = {
-    status: d.status,
-    remark: d.remark,
-  };
-});
+        res.data.departments.forEach((d) => {
+          statusObj[d.name] = {
+            status: d.status,
+            remark: d.remark,
+          };
+        });
 
-setApplicationId(res.data._id);
+        setApplicationId(res.data._id);
 
         // 👇 HOD STATUS ALAG SE (VERY IMPORTANT)
         statusObj.hod = {
-  status:
-    res.data.hodStatus === "rejected"
-      ? "rejected"
-      : res.data.hodStatus === "approved"
-      ? "approved"
-      : "pending",
-  remark: res.data.hodRemark || "",
-};
+          status:
+            res.data.hodStatus === "rejected"
+              ? "rejected"
+              : res.data.hodStatus === "approved"
+                ? "approved"
+                : "pending",
+          remark: res.data.hodRemark || "",
+        };
         setStatusData(statusObj);
       })
 
@@ -871,58 +856,56 @@ setApplicationId(res.data._id);
   if (!statusData) return <p>Loading status...</p>;
 
   return (
-  <div className="max-w-4xl">
-    <h1 className="text-3xl font-bold mb-6">Clearance Status</h1>
+    <div className="max-w-4xl">
+      <h1 className="text-3xl font-bold mb-6">Clearance Status</h1>
 
-    <div className=" grid grid-cols-1 sm:grid-cols-2 gap-4">
-      {ALL_DEPARTMENTS.map((dept) => {
-        const deptData = statusData[dept] || {};
-// const deptStatus = deptData?.status || "pending";
-const deptStatus =
-  dept === "hod"
-    ? String(statusData?.hod?.status || "").toLowerCase()
-    : String(deptData?.status || "pending").toLowerCase();
-const deptRemark =
-  dept === "hod"
-    ? statusData.hod?.remark || ""
-    : deptData.remark || "";
+      <div className=" grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {ALL_DEPARTMENTS.map((dept) => {
+          const deptData = statusData[dept] || {};
+          // const deptStatus = deptData?.status || "pending";
+          const deptStatus =
+            dept === "hod"
+              ? String(statusData?.hod?.status || "").toLowerCase()
+              : String(deptData?.status || "pending").toLowerCase();
+          const deptRemark =
+            dept === "hod"
+              ? statusData.hod?.remark || ""
+              : deptData.remark || "";
 
-const remarkColor =
-  deptStatus === "approved"
-    ? "text-green-600"
-    : deptStatus === "rejected"
-    ? "text-red-600"
-    : "text-yellow-600";
+          const remarkColor =
+            deptStatus === "approved"
+              ? "text-green-600"
+              : deptStatus === "rejected"
+                ? "text-red-600"
+                : "text-yellow-600";
 
-        const color =
-          deptStatus === "approved"
-            ? "green"
-            : deptStatus === "rejected"
-            ? "red"
-            : "yellow";
+          const color =
+            deptStatus === "approved"
+              ? "green"
+              : deptStatus === "rejected"
+                ? "red"
+                : "yellow";
 
-        return (
-          <div
-            key={dept}
-            className={`border rounded-lg p-5 bg-${color}-50 border-${color}-200`}
-          >
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="text-lg font-semibold">
-                  {dept.toUpperCase()}
-                </h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  Status:{" "}
-                  <span className="font-medium capitalize">
-                    {deptStatus}
-                  </span>
-                </p>
- {deptRemark && (
-  <p className={`text-sm mt-2 font-medium ${remarkColor}`}>
-    Remark: {deptRemark}
-  </p>
-)}
-              {/* {deptStatus === "rejected" && deptRemark && (
+          return (
+            <div
+              key={dept}
+              className={`border rounded-lg p-5 bg-${color}-50 border-${color}-200`}
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="text-lg font-semibold">
+                    {dept.toUpperCase()}
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Status:{" "}
+                    <span className="font-medium capitalize">{deptStatus}</span>
+                  </p>
+                  {deptRemark && (
+                    <p className={`text-sm mt-2 font-medium ${remarkColor}`}>
+                      Remark: {deptRemark}
+                    </p>
+                  )}
+                  {/* {deptStatus === "rejected" && deptRemark && (
   <button
     onClick={async () => {
 
@@ -931,7 +914,7 @@ const remarkColor =
 
       try {
         await axios.put(
-          `http://localhost:5000/api/student/resubmit/${applicationId}`,
+          `https://your-dues.onrender.com/api/student/resubmit/${applicationId}`,
           {
             department: dept, // ✅ VERY IMPORTANT
           },
@@ -960,66 +943,71 @@ const remarkColor =
     Fix & Resubmit
   </button>
 )} */}
-{(dept === "hod"
-  ? statusData.hod?.status === "rejected"
-  : deptStatus?.toLowerCase() === "rejected") && (
-  <button
-    onClick={async () => {
-      try {
-        console.log("Resubmitting:", dept);
+                  {(dept === "hod"
+                    ? statusData.hod?.status === "rejected"
+                    : deptStatus?.toLowerCase() === "rejected") && (
+                    <button
+                      onClick={async () => {
+                        try {
+                          console.log("Resubmitting:", dept);
 
-        await axios.put(
-          `http://localhost:5000/api/student/resubmit/${applicationId}`,
-          {
-            department: dept, // ✅ correct dept send
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
+                          await axios.put(
+                            `https://your-dues.onrender.com/api/student/resubmit/${applicationId}`,
+                            {
+                              department: dept, // ✅ correct dept send
+                            },
+                            {
+                              headers: {
+                                Authorization: `Bearer ${localStorage.getItem("token")}`,
+                              },
+                            },
+                          );
 
-        alert(`${dept.toUpperCase()} resubmitted successfully`);
+                          alert(
+                            `${dept.toUpperCase()} resubmitted successfully`,
+                          );
 
-        window.location.reload(); // refresh
+                          window.location.reload(); // refresh
+                        } catch (err) {
+                          console.error(err.response?.data || err.message);
+                          alert(
+                            err.response?.data?.message || "Resubmit failed",
+                          );
+                        }
+                      }}
+                      className="mt-3 px-4 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                    >
+                      Fix & Resubmit
+                    </button>
+                  )}
+                </div>
 
-      } catch (err) {
-        console.error(err.response?.data || err.message);
-        alert(err.response?.data?.message || "Resubmit failed");
-      }
-    }}
-    className="mt-3 px-4 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-  >
-    Fix & Resubmit
-  </button>
-)}
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-medium bg-${color}-600 text-white`}
+                >
+                  {deptStatus}
+                </span>
               </div>
-
-              <span
-                className={`px-3 py-1 rounded-full text-xs font-medium bg-${color}-600 text-white`}
-              >
-                {deptStatus}
-              </span>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
-  </div>
-);
-
+  );
 }
 
- function DepartmentStatus({
-  department,
-  status,
-  statusType,
-  message,
-}) {
+function DepartmentStatus({ department, status, statusType, message }) {
   const statusStyles = {
-    success: { bg: "bg-green-50", border: "border-green-200", badge: "bg-green-600" },
-    warning: { bg: "bg-yellow-50", border: "border-yellow-200", badge: "bg-yellow-600" },
+    success: {
+      bg: "bg-green-50",
+      border: "border-green-200",
+      badge: "bg-green-600",
+    },
+    warning: {
+      bg: "bg-yellow-50",
+      border: "border-yellow-200",
+      badge: "bg-yellow-600",
+    },
     error: { bg: "bg-red-50", border: "border-red-200", badge: "bg-red-600" },
   };
 
@@ -1034,14 +1022,15 @@ const remarkColor =
           <p className="text-xs text-gray-500 mt-2">Last Updated: —</p>
         </div>
 
-        <span className={`${styles.badge} text-white px-3 py-1 rounded-full text-sm`}>
+        <span
+          className={`${styles.badge} text-white px-3 py-1 rounded-full text-sm`}
+        >
           {status}
         </span>
       </div>
     </div>
   );
 }
-
 
 /* ================= TRACK STATUS ================= */
 function TrackStatus() {
@@ -1053,59 +1042,58 @@ function TrackStatus() {
     if (!rollNumber) return;
 
     axios
-      .get(`http://localhost:5000/api/student/check/${rollNumber}`)
+      .get(`https://your-dues.onrender.com/api/student/check/${rollNumber}`)
       .then((res) => {
         if (!res.data.applied) {
-  setDepartments({ list: [], finalStatus: "pending" });
-  return;
-}
+          setDepartments({ list: [], finalStatus: "pending" });
+          return;
+        }
         return axios.get(
-          `http://localhost:5000/api/student/status/${rollNumber}`,
+          `https://your-dues.onrender.com/api/student/status/${rollNumber}`,
         );
       })
       .then((res) => {
         if (!res) return;
         // setDepartments(res.data.departments);
         setDepartments({
-  list: res.data.departments,
-  finalStatus: res.data.finalStatus,
-});
+          list: res.data.departments,
+          finalStatus: res.data.finalStatus,
+        });
       })
       .catch(() => {
-  setDepartments({ list: [], finalStatus: "pending" });
-});
+        setDepartments({ list: [], finalStatus: "pending" });
+      });
   }, [rollNumber]);
 
- if (!departments || !departments.list) return <p>Loading progress...</p>;
-const deptList = departments?.list || [];
-const finalStatus = departments?.finalStatus || "pending";
- const steps = [
-  { label: "Application Submitted", completed: true },
+  if (!departments || !departments.list) return <p>Loading progress...</p>;
+  const deptList = departments?.list || [];
+  const finalStatus = departments?.finalStatus || "pending";
+  const steps = [
+    { label: "Application Submitted", completed: true },
 
-  ...ALL_DEPARTMENTS.map((dept) => {
-    if (dept === "hod") {
+    ...ALL_DEPARTMENTS.map((dept) => {
+      if (dept === "hod") {
+        return {
+          label:
+            finalStatus === "approved"
+              ? "HOD - APPROVED"
+              : "HOD - FINAL APPROVAL",
+          completed: finalStatus === "approved",
+        };
+      }
+
+      const deptData = deptList.find((d) => d.name === dept);
+      const status = deptData?.status || "pending";
+
       return {
-        label:
-          finalStatus === "approved"
-            ? "HOD - APPROVED"
-            : "HOD - FINAL APPROVAL",
-        completed: finalStatus === "approved",
+        label: `${dept.toUpperCase()} - ${status.toUpperCase()}`,
+        completed: status === "approved",
       };
-    }
-
-    const deptData = deptList.find((d) => d.name === dept);
-    const status = deptData?.status || "pending";
-
-    return {
-      label: `${dept.toUpperCase()} - ${status.toUpperCase()}`,
-      completed: status === "approved",
-    };
-  }),
-];
-
+    }),
+  ];
 
   return (
-     <div className="max-w-3xl w-full">
+    <div className="max-w-3xl w-full">
       <h1 className="text-3xl font-bold mb-6">Track Progress</h1>
 
       <div className="bg-white p-6 rounded shadow">
@@ -1165,7 +1153,7 @@ function DownloadCertificate() {
     if (!rollNumber) return;
 
     axios
-      .get(`http://localhost:5000/api/student/check/${rollNumber}`)
+      .get(`https://your-dues.onrender.com/api/student/check/${rollNumber}`)
       .then((res) => {
         if (!res.data.applied) {
           setAllCleared(false);
@@ -1173,14 +1161,14 @@ function DownloadCertificate() {
         }
 
         return axios.get(
-          `http://localhost:5000/api/student/status/${rollNumber}`,
+          `https://your-dues.onrender.com/api/student/status/${rollNumber}`,
         );
       })
       .then((res) => {
         if (!res) return;
 
         const depts = res.data.departments || [];
-         const cleared = res.data.finalStatus === "approved";
+        const cleared = res.data.finalStatus === "approved";
         setAllCleared(cleared);
 
         // ✅ NOW THIS WILL WORK
