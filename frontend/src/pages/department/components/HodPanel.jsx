@@ -37,7 +37,7 @@ export default function HODDashboard() {
       );
 
       setApplications(pendingRes.data);
-
+console.log("Pending Data:", pendingRes.data);
       setStats({
         pending: pendingRes.data.length,
         approved: 0,
@@ -117,17 +117,18 @@ export default function HODDashboard() {
     }
 
     try {
-      await axios.put(
-        `https://your-dues.onrender.com/api/hod/reject/${selectedApp._id}`,
-        { remark },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+     await axios.put(
+  `https://your-dues.onrender.com/api/hod/final-approve/${selectedApp._id}`,
+  { remark },
+  {
+    headers: { Authorization: `Bearer ${token}` },
+  }
+);
 
-      alert("❌ Application rejected successfully!");
-      resetModal();
-      fetchDashboardData();
+await fetchDashboardData();
+resetModal();
+
+alert("✅ Final No Dues Certificate Approved!");
     } catch (err) {
       console.log("ERROR:", err.response?.data || err.message);
       alert(err.response?.data?.message || "❌ Reject failed");
